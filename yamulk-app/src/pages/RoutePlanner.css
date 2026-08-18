@@ -1,0 +1,91 @@
+.route-layout {
+  display: grid; grid-template-columns: 1.3fr 1fr; gap: var(--space-8); align-items: start;
+}
+
+/* Map area */
+.map-area {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md); overflow: hidden;
+  box-shadow: var(--shadow-lg); position: relative;
+}
+
+.map-label {
+  position: absolute; top: 14px; left: 14px; z-index: 10;
+  background: rgba(0,0,0,0.60); backdrop-filter: blur(10px);
+  padding: 6px 14px; border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 700; color: var(--primary);
+  border: 1px solid rgba(52,211,153,0.20);
+}
+
+.map-visual {
+  min-height: 480px;
+  background:
+    radial-gradient(ellipse at 40% 50%, rgba(52,211,153,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse at 65% 35%, rgba(34,211,238,0.05) 0%, transparent 50%),
+    linear-gradient(135deg, #0a110e 0%, #0d1a14 50%, #0a110e 100%);
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.map-visual::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(52,211,153,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(52,211,153,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.sri-lanka-svg { width: 100%; max-width: 400px; height: auto; position: relative; z-index: 1; }
+
+.map-overlay-badge {
+  position: absolute; bottom: 14px; right: 14px;
+  background: rgba(0,0,0,0.65); backdrop-filter: blur(10px);
+  border: 1px solid rgba(52,211,153,0.15); padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm); display: flex; align-items: center; gap: var(--space-3);
+  box-shadow: var(--shadow-md); font-size: 14px; color: var(--text-sub); z-index: 1;
+}
+
+/* Side panel */
+.route-side { display: flex; flex-direction: column; gap: var(--space-4); position: sticky; top: calc(var(--navbar-h) + var(--space-5)); }
+
+.route-info-card, .transport-selector-card, .route-action-card {
+  background: var(--bg-surface); border: 1px solid var(--border-card);
+  border-radius: var(--radius); padding: var(--space-5); box-shadow: var(--shadow-sm);
+}
+
+/* Route points */
+.route-points { position: relative; display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+.route-point { display: flex; align-items: flex-start; gap: var(--space-3); }
+.route-waypoint { display: flex; align-items: center; gap: var(--space-3); }
+.route-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--bg-base); flex-shrink: 0; margin-top: 2px; }
+.start-dot { background: var(--primary); box-shadow: 0 0 8px rgba(52,211,153,0.40); }
+.waypoint-dot { background: var(--warning); width: 10px; height: 10px; box-shadow: 0 0 6px rgba(251,191,36,0.40); }
+.end-dot { background: var(--danger); box-shadow: 0 0 8px rgba(248,113,113,0.35); }
+.route-line { width: 2px; height: 20px; background: var(--border); margin-left: 6px; }
+.route-point-name { font-size: 14px; font-weight: 600; color: var(--text-sub); }
+
+/* Metrics */
+.route-metrics { display: flex; gap: var(--space-3); }
+.metric-box { flex: 1; background: var(--glass); border: 1px solid var(--border-card); border-radius: var(--radius-sm); padding: var(--space-3); text-align: center; }
+.metric-val {
+  font-family: var(--font-display); font-size: 15px; font-weight: 800;
+  background: var(--grad-primary);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.metric-lbl { font-size: 10px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+
+/* Transport mini grid */
+.transport-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+.transport-mini-opt {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: var(--space-3); border: 1.5px solid var(--border-card);
+  border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition); text-align: center;
+  background: var(--glass); backdrop-filter: blur(8px);
+}
+.transport-mini-opt:hover { border-color: rgba(52,211,153,0.30); background: var(--primary-dim); transform: translateY(-2px); }
+.transport-mini-opt.selected { border-color: var(--primary); background: var(--primary-dim); box-shadow: var(--shadow-green); }
+.transport-cost { font-weight: 700; color: var(--primary) !important; }
+
+@media (max-width: 900px) { .route-layout { grid-template-columns: 1fr; } .route-side { position: static; } .map-visual { min-height: 320px; } }

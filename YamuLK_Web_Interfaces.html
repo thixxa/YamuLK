@@ -1,0 +1,1997 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YamuLK - Smart Travel Planning Platform | Web Interfaces</title>
+    <style>
+      :root {
+        --primary: #0e7c86;
+        --primary-dark: #095e66;
+        --accent: #ff8a3d;
+        --bg: #f4f8f9;
+        --card: #ffffff;
+        --text: #1c2b2e;
+        --muted: #6b7c7f;
+        --success: #2e9e5b;
+        --danger: #e2543a;
+        --radius: 14px;
+        --shadow: 0 6px 20px rgba(14, 60, 66, 0.1);
+        --sidebar-w: 230px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: #e9eef0;
+        color: var(--text);
+      }
+
+      /* ============ LOGO PLACEHOLDER ============ */
+      /* REPLACE THIS BLOCK to use your real logo file:
+     <img src="YamuLK/YamuLK_logo.jpg" alt="YamuLK Logo" style="width:40px;height:40px;border-radius:10px;object-fit:cover;">
+     wherever you see class="logo-mark" in this file.  */
+      .logo-mark {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: #fff;
+        flex-shrink: 0;
+      }
+      .logo-mark.lg {
+        width: 96px;
+        height: 96px;
+        border-radius: 24px;
+        font-size: 46px;
+      }
+
+      h1.page-title {
+        text-align: center;
+        font-size: 22px;
+        color: var(--primary-dark);
+        margin: 24px 0 4px;
+      }
+      p.page-sub {
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 20px;
+      }
+
+      /* Demo control bar */
+      .demo-bar {
+        max-width: 1100px;
+        margin: 0 auto 20px;
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 14px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        position: sticky;
+        top: 10px;
+        z-index: 999;
+      }
+      .demo-bar button {
+        border: 1px solid var(--primary);
+        background: #fff;
+        color: var(--primary-dark);
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: 0.2s;
+        font-weight: 600;
+      }
+      .demo-bar button:hover {
+        background: var(--primary);
+        color: #fff;
+      }
+      .demo-bar button.active-btn {
+        background: var(--primary);
+        color: #fff;
+      }
+
+      /* Browser chrome frame */
+      .browser-wrap {
+        max-width: 1200px;
+        margin: 0 auto 40px;
+        padding: 0 12px;
+      }
+      .browser {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        border: 1px solid #d8e2e3;
+      }
+      .browser-bar {
+        background: #e7ecec;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid #d8e2e3;
+      }
+      .browser-bar .dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+      }
+      .browser-bar .url-box {
+        flex: 1;
+        background: #fff;
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: 12px;
+        color: var(--muted);
+        margin-left: 10px;
+      }
+      .browser-body {
+        min-height: 720px;
+        position: relative;
+        background: var(--bg);
+      }
+
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+      }
+
+      /* ============ TOP NAVBAR (used on Home, Details, etc.) ============ */
+      .navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fff;
+        padding: 14px 32px;
+        border-bottom: 1px solid #e5eceb;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      }
+      .navbar .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        font-size: 18px;
+        color: var(--primary-dark);
+      }
+      .navbar .nav-links {
+        display: flex;
+        gap: 28px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      .navbar .nav-links a {
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .navbar .nav-links a:hover,
+      .navbar .nav-links a.active-link {
+        color: var(--primary);
+      }
+      .navbar .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .navbar .icon-btn2 {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        cursor: pointer;
+      }
+      .navbar .avatar-sm {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .page-inner {
+        padding: 32px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .section-label2 {
+        font-size: 17px;
+        font-weight: 800;
+        margin: 26px 0 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .section-label2 span.link2 {
+        font-size: 12px;
+        color: var(--primary);
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      /* ============ 1. SPLASH / LANDING ============ */
+      .splash-page {
+        min-height: 720px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(
+          160deg,
+          var(--primary) 0%,
+          var(--primary-dark) 100%
+        );
+        color: #fff;
+        text-align: center;
+      }
+      .splash-page .app-name {
+        font-size: 38px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        margin-top: 20px;
+      }
+      .splash-page .tagline {
+        font-size: 14px;
+        opacity: 0.85;
+        margin-top: 8px;
+        margin-bottom: 44px;
+      }
+      .loader2 {
+        width: 48px;
+        height: 48px;
+        border: 5px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ============ 2. LOGIN / GUEST (split screen) ============ */
+      .auth-page {
+        display: flex;
+        min-height: 720px;
+      }
+      .auth-visual {
+        flex: 1.1;
+        background: linear-gradient(
+          160deg,
+          var(--primary),
+          var(--primary-dark)
+        );
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        text-align: center;
+      }
+      .auth-visual .headline {
+        font-size: 26px;
+        font-weight: 800;
+        margin-top: 20px;
+        line-height: 1.4;
+      }
+      .auth-visual .sub {
+        font-size: 13px;
+        opacity: 0.85;
+        margin-top: 10px;
+        max-width: 320px;
+      }
+      .auth-form-side {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+      }
+      .auth-card {
+        width: 100%;
+        max-width: 380px;
+        padding: 20px;
+      }
+      .auth-card h2 {
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 6px;
+        color: var(--primary-dark);
+      }
+      .auth-card p.small-muted {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 22px;
+      }
+      .field-group {
+        margin-bottom: 16px;
+      }
+      .field-group label {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 600;
+        display: block;
+        margin-bottom: 6px;
+      }
+      .field-group input,
+      select,
+      .fake-input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #d6e2e3;
+        background: #fff;
+        font-size: 14px;
+      }
+      .btn {
+        width: 100%;
+        padding: 13px;
+        border-radius: 10px;
+        border: none;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 6px;
+        transition: 0.2s;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--primary-dark);
+      }
+      .btn-outline {
+        background: #fff;
+        color: var(--primary);
+        border: 1.5px solid var(--primary);
+      }
+      .btn-outline:hover {
+        background: #eef7f7;
+      }
+      .btn-ghost {
+        background: none;
+        color: var(--muted);
+        text-decoration: underline;
+        font-weight: 600;
+        font-size: 13px;
+        padding: 10px;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+      }
+      .divider-or {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 16px 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .divider-or::before,
+      .divider-or::after {
+        flex: 1;
+        height: 1px;
+        background: #d6e2e3;
+        content: "";
+      }
+
+      /* ============ 3. HOME DASHBOARD (web grid) ============ */
+      .search-bar2 {
+        background: #fff;
+        border-radius: 14px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: var(--shadow);
+        margin-bottom: 6px;
+        max-width: 640px;
+      }
+      .search-bar2 input {
+        border: none;
+        outline: none;
+        flex: 1;
+        font-size: 14px;
+        background: transparent;
+      }
+      .search-bar2 button {
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .cat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+      }
+      .cat-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .cat-card:hover {
+        transform: translateY(-3px);
+      }
+      .cat-card .cat-icon2 {
+        font-size: 32px;
+        margin-bottom: 8px;
+      }
+      .cat-card .cat-name {
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .rec-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+      }
+      .rec-card2 {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .rec-card2:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 26px rgba(14, 60, 66, 0.16);
+      }
+      .rec-img2 {
+        height: 150px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 42px;
+      }
+      .rec-body2 {
+        padding: 14px 16px;
+      }
+      .rec-body2 .name2 {
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .rec-body2 .meta2 {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      .rec-body2 .rating2 {
+        font-size: 12px;
+        color: var(--accent);
+        font-weight: 700;
+        margin-top: 6px;
+      }
+
+      /* ============ 4. DESTINATION DETAILS (two-column web layout) ============ */
+      .details-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 28px;
+      }
+      .hero-img2 {
+        height: 340px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #3fb6c4, #0e7c86);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 80px;
+        position: relative;
+        margin-bottom: 14px;
+      }
+      .hero-img2 .fav-badge {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        cursor: pointer;
+      }
+      .thumbs2 {
+        display: flex;
+        gap: 10px;
+      }
+      .thumb2 {
+        flex: 1;
+        height: 70px;
+        border-radius: 10px;
+        background: #cfe9ea;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        cursor: pointer;
+      }
+      .dest-title2 {
+        font-size: 28px;
+        font-weight: 800;
+        margin-top: 22px;
+      }
+      .dest-tags2 {
+        display: flex;
+        gap: 20px;
+        margin: 12px 0;
+        font-size: 13px;
+        color: var(--muted);
+        flex-wrap: wrap;
+      }
+      .dest-tags2 b {
+        color: var(--text);
+      }
+      .dest-desc2 {
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--text);
+        margin-bottom: 20px;
+      }
+      .action-row2 {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .action-row2 .btn {
+        margin: 0;
+        padding: 12px 20px;
+        width: auto;
+      }
+
+      .side-panel {
+        background: #fff;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: var(--shadow);
+        height: fit-content;
+      }
+      .info-grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+      .info-card2 {
+        background: var(--bg);
+        border-radius: 12px;
+        padding: 12px 14px;
+      }
+      .info-card2 .lbl2 {
+        font-size: 10px;
+        color: var(--muted);
+        font-weight: 700;
+      }
+      .info-card2 .val2 {
+        font-size: 15px;
+        font-weight: 700;
+        margin-top: 3px;
+      }
+      .nearby-title {
+        font-size: 13px;
+        font-weight: 700;
+        margin: 16px 0 8px;
+      }
+      .nearby-chip2 {
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 9px 12px;
+        font-size: 12px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      /* ============ 5. TRIP PLANNER (centered form card) ============ */
+      .planner-wrap {
+        display: flex;
+        justify-content: center;
+        padding: 20px 0;
+      }
+      .planner-card {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        padding: 34px;
+        max-width: 560px;
+        width: 100%;
+      }
+      .planner-card h2 {
+        font-size: 22px;
+        font-weight: 800;
+        margin-bottom: 4px;
+      }
+      .planner-card p.sub2 {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 24px;
+      }
+      .form-row2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .transport-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 6px;
+      }
+      .transport-opt {
+        flex: 1;
+        text-align: center;
+        background: #fff;
+        border: 1.5px solid #d6e2e3;
+        border-radius: 12px;
+        padding: 12px 4px;
+        font-size: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.2s;
+      }
+      .transport-opt.selected {
+        border-color: var(--primary);
+        background: #eaf6f6;
+        color: var(--primary-dark);
+      }
+      .transport-opt .ic {
+        font-size: 22px;
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      /* ============ 6. BUDGET CALCULATOR ============ */
+      .budget-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.3fr;
+        gap: 28px;
+        align-items: start;
+      }
+      .budget-summary2 {
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-dark)
+        );
+        color: #fff;
+        border-radius: 18px;
+        padding: 30px;
+        text-align: center;
+      }
+      .budget-summary2 .amt2 {
+        font-size: 40px;
+        font-weight: 800;
+        margin: 8px 0;
+      }
+      .budget-summary2 .lbl3 {
+        font-size: 12px;
+        opacity: 0.85;
+      }
+      .status-pill2 {
+        display: inline-block;
+        margin-top: 12px;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .status-pill2.ok {
+        background: #2e9e5b;
+      }
+      .status-pill2.over {
+        background: #e2543a;
+      }
+      .budget-form {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: var(--shadow);
+      }
+      .input-row-icon2 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+      }
+      .input-row-icon2 .ic2 {
+        font-size: 20px;
+      }
+      .input-row-icon2 input {
+        border: none;
+        outline: none;
+        flex: 1;
+        font-size: 14px;
+        text-align: right;
+        background: transparent;
+      }
+      .input-row-icon2 .lbl4 {
+        font-size: 13px;
+        font-weight: 600;
+        flex: 1;
+      }
+
+      /* ============ 7. ROUTE PLANNER ============ */
+      .route-grid {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 24px;
+      }
+      .map-box2 {
+        height: 520px;
+        border-radius: 16px;
+        position: relative;
+        overflow: hidden;
+        background: radial-gradient(
+          circle at 30% 30%,
+          #cdeeef 0%,
+          #a9dbe0 40%,
+          #7fc4cb 100%
+        );
+      }
+      .map-route2 {
+        position: absolute;
+        top: 50%;
+        left: 12%;
+        width: 76%;
+        height: 4px;
+        background: repeating-linear-gradient(
+          90deg,
+          var(--primary) 0 10px,
+          transparent 10px 18px
+        );
+        transform: rotate(-6deg);
+      }
+      .pin2 {
+        position: absolute;
+        font-size: 32px;
+      }
+      .pin2.start {
+        top: 44%;
+        left: 10%;
+      }
+      .pin2.end {
+        top: 38%;
+        left: 82%;
+      }
+      .map-label2 {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--primary-dark);
+      }
+      .route-side {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        padding: 22px;
+      }
+      .route-point2 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        padding: 8px 0;
+      }
+      .route-point2 .dot2 {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--primary);
+      }
+      .route-point2.end .dot2 {
+        background: var(--danger);
+      }
+      .route-line2 {
+        width: 2px;
+        height: 20px;
+        background: #d6e2e3;
+        margin-left: 5px;
+      }
+      .route-metrics2 {
+        display: flex;
+        gap: 10px;
+        margin: 18px 0;
+      }
+      .metric-box2 {
+        flex: 1;
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+      }
+      .metric-box2 .v2 {
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--primary-dark);
+      }
+      .metric-box2 .l2 {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      /* ============ 8. WEATHER ============ */
+      .weather-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+      .weather-hero2 {
+        background: linear-gradient(160deg, #4fb9d6, #0e7c86);
+        color: #fff;
+        text-align: center;
+        padding: 44px 20px;
+        border-radius: 18px;
+      }
+      .weather-hero2 .loc2 {
+        font-size: 14px;
+        opacity: 0.85;
+      }
+      .weather-hero2 .temp2 {
+        font-size: 70px;
+        font-weight: 800;
+        margin: 10px 0;
+      }
+      .weather-hero2 .cond2 {
+        font-size: 15px;
+        opacity: 0.9;
+      }
+      .weather-hero2 .emoji2 {
+        font-size: 56px;
+      }
+      .forecast-row2 {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+        flex-wrap: wrap;
+      }
+      .forecast-day2 {
+        flex: 1;
+        min-width: 70px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 14px 6px;
+        text-align: center;
+        box-shadow: var(--shadow);
+      }
+      .forecast-day2 .d2 {
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .forecast-day2 .ic3 {
+        font-size: 24px;
+        margin: 8px 0;
+      }
+      .forecast-day2 .t2 {
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .weather-detail-grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .wd-card2 {
+        background: #fff;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: var(--shadow);
+        text-align: center;
+      }
+      .wd-card2 .ic4 {
+        font-size: 28px;
+      }
+      .wd-card2 .v3 {
+        font-size: 20px;
+        font-weight: 800;
+        margin-top: 6px;
+      }
+      .wd-card2 .l3 {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      /* ============ 9. SAVED TRIPS ============ */
+      .tab-row2 {
+        display: flex;
+        background: #fff;
+        border-radius: 12px;
+        padding: 5px;
+        margin-bottom: 20px;
+        box-shadow: var(--shadow);
+        max-width: 420px;
+      }
+      .tab-item2 {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        border-radius: 9px;
+        cursor: pointer;
+        color: var(--muted);
+      }
+      .tab-item2.active-tab2 {
+        background: var(--primary);
+        color: #fff;
+      }
+      .saved-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+      .saved-card2 {
+        display: flex;
+        gap: 14px;
+        background: #fff;
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: var(--shadow);
+        align-items: center;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .saved-card2:hover {
+        transform: translateY(-2px);
+      }
+      .saved-card2 .thumb3 {
+        width: 64px;
+        height: 64px;
+        border-radius: 12px;
+        background: #dff0f1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        flex-shrink: 0;
+      }
+      .saved-card2 .info2 {
+        flex: 1;
+      }
+      .saved-card2 .info2 .n2 {
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .saved-card2 .info2 .s3 {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      .saved-card2 .heart2 {
+        font-size: 20px;
+        color: var(--danger);
+      }
+
+      /* ============ 10. PROFILE ============ */
+      .profile-grid {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 28px;
+      }
+      .profile-card {
+        background: #fff;
+        border-radius: 18px;
+        padding: 30px 20px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        height: fit-content;
+      }
+      .avatar2 {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 38px;
+        font-weight: 700;
+        margin: 0 auto 14px;
+      }
+      .profile-card .uname2 {
+        font-size: 17px;
+        font-weight: 800;
+      }
+      .profile-card .uemail2 {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .profile-card .btn {
+        margin-top: 20px;
+      }
+      .menu-list2 {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .menu-item2 {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 24px;
+        border-bottom: 1px solid #eef3f3;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .menu-item2:last-child {
+        border-bottom: none;
+      }
+      .menu-item2:hover {
+        background: var(--bg);
+      }
+      .menu-item2 .ic5 {
+        font-size: 20px;
+        width: 26px;
+        text-align: center;
+      }
+      .menu-item2 .t3 {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .menu-item2 .arrow2 {
+        color: var(--muted);
+      }
+      .menu-item2.logout2 {
+        color: var(--danger);
+      }
+      .menu-item2.logout2 .t3 {
+        color: var(--danger);
+      }
+
+      @media (max-width: 900px) {
+        .details-grid,
+        .budget-grid,
+        .route-grid,
+        .weather-grid,
+        .profile-grid {
+          grid-template-columns: 1fr;
+        }
+        .rec-grid,
+        .cat-grid,
+        .saved-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1 class="page-title">YamuLK — Smart Travel Planning Platform</h1>
+    <p class="page-sub">
+      Web Application Interface Prototype · Lab 02 Deliverable · 10 Interfaces
+    </p>
+
+    <div class="demo-bar" id="demoBar">
+      <button data-page="splash">1. Splash/Landing</button>
+      <button data-page="login">2. Login/Guest</button>
+      <button data-page="home">3. Home Dashboard</button>
+      <button data-page="details">4. Destination Details</button>
+      <button data-page="planner">5. Trip Planner</button>
+      <button data-page="budget">6. Budget Calculator</button>
+      <button data-page="route">7. Route Planner</button>
+      <button data-page="weather">8. Weather</button>
+      <button data-page="saved">9. Saved Trips</button>
+      <button data-page="profile">10. Profile</button>
+    </div>
+
+    <div class="browser-wrap">
+      <div class="browser">
+        <div class="browser-bar">
+          <div class="dot" style="background: #ff5f57"></div>
+          <div class="dot" style="background: #febc2e"></div>
+          <div class="dot" style="background: #28c840"></div>
+          <div class="url-box" id="urlBox">🔒 yamulk.lk/splash</div>
+        </div>
+        <div class="browser-body">
+          <!-- 1. SPLASH / LANDING -->
+          <section class="page active splash-page" id="page-splash">
+            <div class="logo-mark lg">
+              <img
+                src="P:\YamuLK\YamuLK_logo_transparent_bg.png"
+                alt="YamuLK Logo"
+                style="
+                  width: 300px;
+                  height: 300px;
+                  border-radius: 10px;
+                  object-fit: cover;
+                "
+              />
+            </div>
+            <div class="app-name">YamuLK</div>
+            <div class="tagline">Explore Sri Lanka, Your Way</div>
+            <div class="loader2"></div>
+          </section>
+
+          <!-- 2. LOGIN / GUEST -->
+          <section class="page" id="page-login">
+            <div class="auth-page">
+              <div class="auth-visual">
+                <div class="logo-mark lg">
+                  <img
+                    src="P:\YamuLK\YamuLK_logo_transparent_bg.png"
+                    alt="YamuLK Logo"
+                    style="
+                      width: 300px;
+                      height: 300px;
+                      border-radius: 10px;
+                      object-fit: cover;
+                    "
+                  />
+                </div>
+                <div class="headline">
+                  Discover Sri Lanka's<br />Hidden Gems
+                </div>
+                <div class="sub">
+                  Plan trips, track budgets, and explore beaches, waterfalls,
+                  mountains and historical sites — all in one place.
+                </div>
+              </div>
+              <div class="auth-form-side">
+                <div class="auth-card">
+                  <h2>Welcome Back</h2>
+                  <p class="small-muted">
+                    Sign in to continue planning your journey
+                  </p>
+                  <div class="field-group">
+                    <label>Username</label>
+                    <input type="text" placeholder="Enter your username" />
+                  </div>
+                  <div class="field-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="Enter your password" />
+                  </div>
+                  <button class="btn btn-primary" onclick="showPage('home')">
+                    Login
+                  </button>
+                  <button
+                    class="btn btn-outline"
+                    onclick="alert('Navigate to Registration Form')"
+                  >
+                    Register
+                  </button>
+                  <div class="divider-or">OR</div>
+                  <button
+                    class="btn btn-ghost"
+                    onclick="showPage('home')"
+                    style="background: #fff; border: 1px dashed #b9cdce"
+                  >
+                    Continue as Guest
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. HOME DASHBOARD -->
+          <section class="page" id="page-home">
+            <div class="navbar">
+              <div class="brand">
+                <span class="logo-mark">
+                  <img
+                    src="P:\YamuLK\YamuLK_logo_transparent_bg.png"
+                    alt="YamuLK Logo"
+                    style="
+                      width: 50px;
+                      height: 50px;
+                      border-radius: 10px;
+                      object-fit: cover;
+                    " /></span
+                >YamuLK
+              </div>
+              <div class="nav-links">
+                <a class="active-link" onclick="showPage('home')">Home</a>
+                <a onclick="showPage('route')">Explore</a>
+                <a onclick="showPage('saved')">Saved Trips</a>
+                <a onclick="showPage('planner')">Trip Planner</a>
+              </div>
+              <div class="nav-right">
+                <div class="icon-btn2">🔔</div>
+                <div class="avatar-sm" onclick="showPage('profile')">KP</div>
+              </div>
+            </div>
+            <div class="page-inner">
+              <div class="search-bar2">
+                <span>🔍</span>
+                <input
+                  type="text"
+                  placeholder="Search destinations e.g. Ella, Mirissa, Sigiriya..."
+                />
+                <button>Search</button>
+              </div>
+
+              <div class="section-label2">Categories</div>
+              <div class="cat-grid">
+                <div class="cat-card" onclick="showPage('details')">
+                  <div class="cat-icon2">🏖️</div>
+                  <div class="cat-name">Beaches</div>
+                </div>
+                <div class="cat-card" onclick="showPage('details')">
+                  <div class="cat-icon2">💧</div>
+                  <div class="cat-name">Waterfalls</div>
+                </div>
+                <div class="cat-card" onclick="showPage('details')">
+                  <div class="cat-icon2">⛰️</div>
+                  <div class="cat-name">Mountains</div>
+                </div>
+                <div class="cat-card" onclick="showPage('details')">
+                  <div class="cat-icon2">🏛️</div>
+                  <div class="cat-name">Historical Places</div>
+                </div>
+              </div>
+
+              <div class="section-label2">
+                Recommended for You
+                <span class="link2" onclick="showPage('saved')">See all</span>
+              </div>
+              <div class="rec-grid">
+                <div class="rec-card2" onclick="showPage('details')">
+                  <div
+                    class="rec-img2"
+                    style="
+                      background: linear-gradient(135deg, #4fc3d1, #0e7c86);
+                    "
+                  >
+                    🏖️
+                  </div>
+                  <div class="rec-body2">
+                    <div class="name2">Mirissa Beach</div>
+                    <div class="meta2">Southern Province</div>
+                    <div class="rating2">⭐ 4.7 · Rs. 3,500/day</div>
+                  </div>
+                </div>
+                <div class="rec-card2" onclick="showPage('details')">
+                  <div
+                    class="rec-img2"
+                    style="
+                      background: linear-gradient(135deg, #7fd6a0, #2e9e5b);
+                    "
+                  >
+                    💧
+                  </div>
+                  <div class="rec-body2">
+                    <div class="name2">Diyaluma Falls</div>
+                    <div class="meta2">Uva Province</div>
+                    <div class="rating2">⭐ 4.8 · Rs. 2,000/day</div>
+                  </div>
+                </div>
+                <div class="rec-card2" onclick="showPage('details')">
+                  <div
+                    class="rec-img2"
+                    style="
+                      background: linear-gradient(135deg, #a58cf0, #5a4bb0);
+                    "
+                  >
+                    ⛰️
+                  </div>
+                  <div class="rec-body2">
+                    <div class="name2">Ella Rock</div>
+                    <div class="meta2">Uva Province</div>
+                    <div class="rating2">⭐ 4.9 · Rs. 1,500/day</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="section-label2">Popular Historical Sites</div>
+              <div class="rec-grid">
+                <div class="rec-card2" onclick="showPage('details')">
+                  <div
+                    class="rec-img2"
+                    style="
+                      background: linear-gradient(135deg, #e0a86a, #b5793c);
+                    "
+                  >
+                    🏛️
+                  </div>
+                  <div class="rec-body2">
+                    <div class="name2">Sigiriya Rock</div>
+                    <div class="meta2">Central Province</div>
+                    <div class="rating2">⭐ 4.9 · Rs. 5,000/day</div>
+                  </div>
+                </div>
+                <div class="rec-card2" onclick="showPage('details')">
+                  <div
+                    class="rec-img2"
+                    style="
+                      background: linear-gradient(135deg, #e0a86a, #b5793c);
+                    "
+                  >
+                    🏛️
+                  </div>
+                  <div class="rec-body2">
+                    <div class="name2">Anuradhapura</div>
+                    <div class="meta2">North Central Province</div>
+                    <div class="rating2">⭐ 4.6 · Rs. 2,500/day</div>
+                  </div>
+                </div>
+                <div class="rec-card2" onclick="showPage('details')">
+                  <div
+                    class="rec-img2"
+                    style="
+                      background: linear-gradient(135deg, #e0a86a, #b5793c);
+                    "
+                  >
+                    🏛️
+                  </div>
+                  <div class="rec-body2">
+                    <div class="name2">Polonnaruwa</div>
+                    <div class="meta2">North Central Province</div>
+                    <div class="rating2">⭐ 4.7 · Rs. 2,200/day</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 4. DESTINATION DETAILS -->
+          <section class="page" id="page-details">
+            <div class="navbar">
+              <div
+                class="brand"
+                style="cursor: pointer"
+                onclick="showPage('home')"
+              >
+                <span class="logo-mark"
+                  ><img
+                    src="P:\YamuLK\YamuLK_logo_transparent_bg.png"
+                    alt="YamuLK Logo"
+                    style="
+                      width: 50px;
+                      height: 50px;
+                      border-radius: 10px;
+                      object-fit: cover;
+                    " /></span
+                >YamuLK
+              </div>
+              <div class="nav-links">
+                <a onclick="showPage('home')">Home</a>
+                <a onclick="showPage('route')">Explore</a>
+                <a onclick="showPage('saved')">Saved Trips</a>
+                <a onclick="showPage('planner')">Trip Planner</a>
+              </div>
+              <div class="nav-right">
+                <div class="avatar-sm" onclick="showPage('profile')">KP</div>
+              </div>
+            </div>
+            <div class="page-inner">
+              <div class="details-grid">
+                <div>
+                  <div class="hero-img2">
+                    🏖️
+                    <div class="fav-badge">🤍</div>
+                  </div>
+                  <div class="thumbs2">
+                    <div class="thumb2">🏖️</div>
+                    <div class="thumb2">🌅</div>
+                    <div class="thumb2">🐚</div>
+                    <div class="thumb2">🥥</div>
+                  </div>
+                  <div class="dest-title2">Mirissa Beach</div>
+                  <div class="dest-tags2">
+                    <span>⭐ <b>4.7</b> (1.2k reviews)</span>
+                    <span>📍 <b>168 km</b> from Colombo</span>
+                  </div>
+                  <div class="dest-desc2">
+                    A tranquil coastal escape famous for golden sands, whale
+                    watching tours, and stunning sunsets. One of the most
+                    visited beach towns in Southern Sri Lanka, ideal for weekend
+                    getaways and honeymooners alike.
+                  </div>
+                  <div class="action-row2">
+                    <button
+                      class="btn btn-primary"
+                      onclick="showPage('planner')"
+                    >
+                      Plan Trip
+                    </button>
+                    <button class="btn btn-outline">💾 Save</button>
+                    <button class="btn btn-outline">📤 Share</button>
+                  </div>
+                </div>
+                <div class="side-panel">
+                  <div class="info-grid2">
+                    <div class="info-card2">
+                      <div class="lbl2">ESTIMATED COST</div>
+                      <div class="val2">Rs. 3,500/day</div>
+                    </div>
+                    <div class="info-card2">
+                      <div class="lbl2">WEATHER</div>
+                      <div class="val2">☀️ 29°C</div>
+                    </div>
+                  </div>
+                  <div class="nearby-title">Nearby Hotels</div>
+                  <div class="nearby-chip2">🏨 Mirissa Bay Villa</div>
+                  <div class="nearby-chip2">🏨 Paradise Beach Club</div>
+                  <div class="nearby-title">Nearby Restaurants</div>
+                  <div class="nearby-chip2">🍽️ Zephyr Restaurant</div>
+                  <div class="nearby-chip2">🍽️ Dewmini Roti Shop</div>
+                  <div class="nearby-title">Nearby Attractions</div>
+                  <div class="nearby-chip2">🐋 Whale Watching Point</div>
+                  <div class="nearby-chip2">🌴 Coconut Tree Hill</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 5. TRIP PLANNER -->
+          <section class="page" id="page-planner">
+            <div class="navbar">
+              <div
+                class="brand"
+                style="cursor: pointer"
+                onclick="showPage('home')"
+              >
+                <span class="logo-mark"
+                  ><img
+                    src="P:\YamuLK\YamuLK_logo_transparent_bg.png"
+                    alt="YamuLK Logo"
+                    style="
+                      width: 50px;
+                      height: 50px;
+                      border-radius: 10px;
+                      object-fit: cover;
+                    " /></span
+                >YamuLK
+              </div>
+              <div class="nav-links">
+                <a onclick="showPage('home')">Home</a>
+                <a onclick="showPage('route')">Explore</a>
+                <a onclick="showPage('saved')">Saved Trips</a>
+                <a class="active-link" onclick="showPage('planner')"
+                  >Trip Planner</a
+                >
+              </div>
+              <div class="nav-right">
+                <div class="avatar-sm" onclick="showPage('profile')">KP</div>
+              </div>
+            </div>
+            <div class="page-inner planner-wrap">
+              <div class="planner-card">
+                <h2>Plan Your Trip</h2>
+                <p class="sub2">Mirissa Beach · Southern Province</p>
+
+                <div class="form-row2">
+                  <div class="field-group">
+                    <label>Travel Date</label
+                    ><input type="date" class="fake-input" />
+                  </div>
+                  <div class="field-group">
+                    <label>Number of People</label
+                    ><input type="number" class="fake-input" value="2" />
+                  </div>
+                </div>
+                <div class="field-group">
+                  <label>Budget (Rs.)</label
+                  ><input type="number" class="fake-input" value="15000" />
+                </div>
+                <div class="field-group">
+                  <label>Transport Method</label>
+                  <div class="transport-row">
+                    <div class="transport-opt selected">
+                      <span class="ic">🚌</span>Bus
+                    </div>
+                    <div class="transport-opt">
+                      <span class="ic">🚆</span>Train
+                    </div>
+                    <div class="transport-opt">
+                      <span class="ic">🚗</span>Car
+                    </div>
+                    <div class="transport-opt">
+                      <span class="ic">🏍️</span>Bike
+                    </div>
+                  </div>
+                </div>
+                <button
+                  class="btn btn-primary"
+                  style="margin-top: 16px"
+                  onclick="showPage('budget')"
+                >
+                  Generate Plan
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 6. BUDGET CALCULATOR -->
+          <section class="page" id="page-budget">
+            <div class="navbar">
+              <div
+                class="brand"
+                style="cursor: pointer"
+                onclick="showPage('home')"
+              >
+                <span class="logo-mark"><img
+                    src="P:\YamuLK\YamuLK_logo_transparent_bg.png"
+                    alt="YamuLK Logo"
+                    style="
+                      width: 50px;
+                      height: 50px;
+                      border-radius: 10px;
+                      object-fit: cover;
+                    " /></span>YamuLK
+              </div>
+              <div class="nav-links">
+                <a onclick="showPage('home')">Home</a>
+                <a onclick="showPage('route')">Explore</a>
+                <a onclick="showPage('saved')">Saved Trips</a>
+                <a onclick="showPage('planner')">Trip Planner</a>
+              </div>
+              <div class="nav-right">
+                <div class="avatar-sm" onclick="showPage('profile')">KP</div>
+              </div>
+            </div>
+            <div class="page-inner">
+              <div class="section-label2">Budget Calculator</div>
+              <div class="budget-grid">
+                <div class="budget-summary2">
+                  <div class="lbl3">ESTIMATED TOTAL COST</div>
+                  <div class="amt2">Rs. 13,800</div>
+                  <div class="lbl3">of Rs. 15,000 budget</div>
+                  <div class="status-pill2 ok">✓ Within Budget</div>
+                </div>
+                <div class="budget-form">
+                  <div class="input-row-icon2">
+                    <span class="ic2">🚌</span
+                    ><span class="lbl4">Transport</span
+                    ><input type="number" value="4000" />
+                  </div>
+                  <div class="input-row-icon2">
+                    <span class="ic2">🏨</span
+                    ><span class="lbl4">Accommodation</span
+                    ><input type="number" value="6000" />
+                  </div>
+                  <div class="input-row-icon2">
+                    <span class="ic2">🍽️</span><span class="lbl4">Food</span
+                    ><input type="number" value="2800" />
+                  </div>
+                  <div class="input-row-icon2">
+                    <span class="ic2">🎟️</span
+                    ><span class="lbl4">Other Expenses</span
+                    ><input type="number" value="1000" />
+                  </div>
+                  <button class="btn btn-primary" onclick="showPage('route')">
+                    View Route
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 7. ROUTE PLANNER -->
+          <section class="page" id="page-route">
+            <div class="navbar">
+              <div
+                class="brand"
+                style="cursor: pointer"
+                onclick="showPage('home')"
+              >
+                <span class="logo-mark"
+                  ><img
+                    src="P:\YamuLK\YamuLK_logo_transparent_bg.png"
+                    alt="YamuLK Logo"
+                    style="
+                      width: 50px;
+                      height: 50px;
+                      border-radius: 10px;
+                      object-fit: cover;
+                    " /></span
+                >YamuLK
+              </div>
+              <div class="nav-links">
+                <a onclick="showPage('home')">Home</a>
+                <a class="active-link" onclick="showPage('route')">Explore</a>
+                <a onclick="showPage('saved')">Saved Trips</a>
+                <a onclick="showPage('planner')">Trip Planner</a>
+              </div>
+              <div class="nav-right">
+                <div class="avatar-sm" onclick="showPage('profile')">KP</div>
+              </div>
+            </div>
+            <div class="page-inner">
+              <div class="section-label2">Route Planner</div>
+              <div class="route-grid">
+                <div class="map-box2">
+                  <div class="map-label2">📍 Live Map Preview</div>
+                  <div class="map-route2"></div>
+                  <div class="pin2 start">🔵</div>
+                  <div class="pin2 end">📍</div>
+                </div>
+                <div class="route-side">
+                  <div class="route-point2">
+                    <div class="dot2"></div>
+                    <div>Colombo Fort (Start Location)</div>
+                  </div>
+                  <div class="route-line2"></div>
+                  <div class="route-point2 end">
+                    <div class="dot2"></div>
+                    <div>Mirissa Beach (Destination)</div>
+                  </div>
+                  <div class="route-metrics2">
+                    <div class="metric-box2">
+                      <div class="v2">168 km</div>
+                      <div class="l2">Distance</div>
+                    </div>
+                    <div class="metric-box2">
+                      <div class="v2">3h 20m</div>
+                      <div class="l2">Est. Time</div>
+                    </div>
+                  </div>
+                  <button
+                    class="btn btn-primary"
+                    onclick="alert('Launching turn-by-turn navigation...')"
+                  >
+                    <img
+                      src="P:\YamuLK\YamuLK_logo_transparent_bg.png"
+                      alt="YamuLK Logo"
+                      style="
+                        width: 300px;
+                        height: 300px;
+                        border-radius: 10px;
+                        object-fit: cover;
+                      "
+                    />
+                    Start Navigation
+                  </button>
+                  <button class="btn btn-outline" onclick="showPage('weather')">
+                    Check Weather
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 8. WEATHER -->
+          <section class="page" id="page-weather">
+            <div class="navbar">
+              <div
+                class="brand"
+                style="cursor: pointer"
+                onclick="showPage('home')"
+              >
+                <span class="logo-mark"
+                  ><img
+                    src="P:\YamuLK\YamuLK_logo_transparent_bg.png"
+                    alt="YamuLK Logo"
+                    style="
+                      width: 50px;
+                      height: 50px;
+                      border-radius: 10px;
+                      object-fit: cover;
+                    " /></span
+                >YamuLK
+              </div>
+              <div class="nav-links">
+                <a onclick="showPage('home')">Home</a>
+                <a onclick="showPage('route')">Explore</a>
+                <a onclick="showPage('saved')">Saved Trips</a>
+                <a onclick="showPage('planner')">Trip Planner</a>
+              </div>
+              <div class="nav-right">
+                <div class="avatar-sm" onclick="showPage('profile')">KP</div>
+              </div>
+            </div>
+            <div class="page-inner">
+              <div class="section-label2">Weather Forecast</div>
+              <div class="weather-grid">
+                <div>
+                  <div class="weather-hero2">
+                    <div class="loc2">Mirissa, Southern Province</div>
+                    <div class="emoji2">☀️</div>
+                    <div class="temp2">29°C</div>
+                    <div class="cond2">Sunny · Feels like 32°C</div>
+                  </div>
+                  <div class="forecast-row2">
+                    <div class="forecast-day2">
+                      <div class="d2">Wed</div>
+                      <div class="ic3">☀️</div>
+                      <div class="t2">29°</div>
+                    </div>
+                    <div class="forecast-day2">
+                      <div class="d2">Thu</div>
+                      <div class="ic3">⛅</div>
+                      <div class="t2">28°</div>
+                    </div>
+                    <div class="forecast-day2">
+                      <div class="d2">Fri</div>
+                      <div class="ic3">🌦️</div>
+                      <div class="t2">26°</div>
+                    </div>
+                    <div class="forecast-day2">
+                      <div class="d2">Sat</div>
+                      <div class="ic3">🌧️</div>
+                      <div class="t2">25°</div>
+                    </div>
+                    <div class="forecast-day2">
+                      <div class="d2">Sun</div>
+                      <div class="ic3">☀️</div>
+                      <div class="t2">30°</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="weather-detail-grid2">
+                  <div class="wd-card2">
+                    <div class="ic4">🌡️</div>
+                    <div class="v3">29°C</div>
+                    <div class="l3">Temperature</div>
+                  </div>
+                  <div class="wd-card2">
+                    <div class="ic4">🌧️</div>
+                    <div class="v3">15%</div>
+                    <div class="l3">Rain Probability</div>
+                  </div>
+                  <div class="wd-card2">
+                    <div class="ic4">💧</div>
+                    <div class="v3">68%</div>
+                    <div class="l3">Humidity</div>
+                  </div>
+                  <div class="wd-card2">
+                    <div class="ic4">💨</div>
+                    <div class="v3">12 km/h</div>
+                    <div class="l3">Wind Speed</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 9. SAVED TRIPS -->
+          <section class="page" id="page-saved">
+            <div class="navbar">
+              <div
+                class="brand"
+                style="cursor: pointer"
+                onclick="showPage('home')"
+              >
+                <span class="logo-mark"
+                  ><img
+                    src="P:\YamuLK\YamuLK_logo_transparent_bg.png"
+                    alt="YamuLK Logo"
+                    style="
+                      width: 50px;
+                      height: 50px;
+                      border-radius: 10px;
+                      object-fit: cover;
+                    " /></span
+                >YamuLK
+              </div>
+              <div class="nav-links">
+                <a onclick="showPage('home')">Home</a>
+                <a onclick="showPage('route')">Explore</a>
+                <a class="active-link" onclick="showPage('saved')"
+                  >Saved Trips</a
+                >
+                <a onclick="showPage('planner')">Trip Planner</a>
+              </div>
+              <div class="nav-right">
+                <div class="avatar-sm" onclick="showPage('profile')">KP</div>
+              </div>
+            </div>
+            <div class="page-inner">
+              <div class="section-label2">Saved Trips</div>
+              <div class="tab-row2">
+                <div class="tab-item2 active-tab2">Saved Itineraries</div>
+                <div class="tab-item2">Favourite Destinations</div>
+              </div>
+              <div class="saved-grid">
+                <div class="saved-card2" onclick="showPage('planner')">
+                  <div class="thumb3">🏖️</div>
+                  <div class="info2">
+                    <div class="n2">Mirissa Weekend Trip</div>
+                    <div class="s3">2 people · Rs. 13,800 · 2 days</div>
+                  </div>
+                  <div class="heart2">❤️</div>
+                </div>
+                <div class="saved-card2" onclick="showPage('planner')">
+                  <div class="thumb3">⛰️</div>
+                  <div class="info2">
+                    <div class="n2">Ella Hiking Adventure</div>
+                    <div class="s3">4 people · Rs. 22,500 · 3 days</div>
+                  </div>
+                  <div class="heart2">❤️</div>
+                </div>
+                <div class="saved-card2" onclick="showPage('details')">
+                  <div class="thumb3">🏛️</div>
+                  <div class="info2">
+                    <div class="n2">Sigiriya Rock Fortress</div>
+                    <div class="s3">Favourite · Central Province</div>
+                  </div>
+                  <div class="heart2">❤️</div>
+                </div>
+                <div class="saved-card2" onclick="showPage('details')">
+                  <div class="thumb3">💧</div>
+                  <div class="info2">
+                    <div class="n2">Diyaluma Falls</div>
+                    <div class="s3">Favourite · Uva Province</div>
+                  </div>
+                  <div class="heart2">❤️</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 10. USER PROFILE -->
+          <section class="page" id="page-profile">
+            <div class="navbar">
+              <div
+                class="brand"
+                style="cursor: pointer"
+                onclick="showPage('home')"
+              >
+                <span class="logo-mark"
+                  ><img
+                    src="P:\YamuLK\YamuLK_logo_transparent_bg.png"
+                    alt="YamuLK Logo"
+                    style="
+                      width: 50px;
+                      height: 50px;
+                      border-radius: 10px;
+                      object-fit: cover;
+                    " /></span
+                >YamuLK
+              </div>
+              <div class="nav-links">
+                <a onclick="showPage('home')">Home</a>
+                <a onclick="showPage('route')">Explore</a>
+                <a onclick="showPage('saved')">Saved Trips</a>
+                <a onclick="showPage('planner')">Trip Planner</a>
+              </div>
+              <div class="nav-right">
+                <div class="avatar-sm" onclick="showPage('profile')">KP</div>
+              </div>
+            </div>
+            <div class="page-inner">
+              <div class="section-label2">My Profile</div>
+              <div class="profile-grid">
+                <div class="profile-card">
+                  <div class="avatar2">KP</div>
+                  <div class="uname2">Kasun Perera</div>
+                  <div class="uemail2">kasun.perera@email.com</div>
+                  <button class="btn btn-outline">Edit Profile</button>
+                </div>
+                <div class="menu-list2">
+                  <div class="menu-item2">
+                    <span class="ic5">👤</span
+                    ><span class="t3">User Details</span
+                    ><span class="arrow2">›</span>
+                  </div>
+                  <div class="menu-item2">
+                    <span class="ic5">⚙️</span
+                    ><span class="t3">Preferences</span
+                    ><span class="arrow2">›</span>
+                  </div>
+                  <div class="menu-item2" onclick="showPage('saved')">
+                    <span class="ic5">🧳</span
+                    ><span class="t3">Saved Trips</span
+                    ><span class="arrow2">›</span>
+                  </div>
+                  <div class="menu-item2">
+                    <span class="ic5">🔔</span
+                    ><span class="t3">Notifications</span
+                    ><span class="arrow2">›</span>
+                  </div>
+                  <div class="menu-item2">
+                    <span class="ic5">❓</span
+                    ><span class="t3">Help &amp; Support</span
+                    ><span class="arrow2">›</span>
+                  </div>
+                  <div class="menu-item2 logout2" onclick="showPage('login')">
+                    <span class="ic5">🚪</span><span class="t3">Logout</span
+                    ><span class="arrow2">›</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const urls = {
+        splash: "yamulk.lk/splash",
+        login: "yamulk.lk/login",
+        home: "yamulk.lk/dashboard",
+        details: "yamulk.lk/destination/mirissa-beach",
+        planner: "yamulk.lk/plan-trip",
+        budget: "yamulk.lk/budget-calculator",
+        route: "yamulk.lk/route-planner",
+        weather: "yamulk.lk/weather",
+        saved: "yamulk.lk/saved-trips",
+        profile: "yamulk.lk/profile",
+      };
+      function showPage(name) {
+        document
+          .querySelectorAll(".page")
+          .forEach((s) => s.classList.remove("active"));
+        document.getElementById("page-" + name).classList.add("active");
+        document
+          .querySelectorAll(".demo-bar button")
+          .forEach((b) => b.classList.remove("active-btn"));
+        const btn = document.querySelector(
+          '.demo-bar button[data-page="' + name + '"]',
+        );
+        if (btn) btn.classList.add("active-btn");
+        document.getElementById("urlBox").textContent = "🔒 " + urls[name];
+        document
+          .querySelector(".browser-wrap")
+          .scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      document.querySelectorAll(".demo-bar button").forEach((b) => {
+        b.addEventListener("click", () => showPage(b.dataset.page));
+      });
+      document
+        .querySelector('.demo-bar button[data-page="splash"]')
+        .classList.add("active-btn");
+
+      document.querySelectorAll(".transport-opt").forEach((opt) => {
+        opt.addEventListener("click", () => {
+          opt.parentElement
+            .querySelectorAll(".transport-opt")
+            .forEach((o) => o.classList.remove("selected"));
+          opt.classList.add("selected");
+        });
+      });
+      document.querySelectorAll(".tab-item2").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          tab.parentElement
+            .querySelectorAll(".tab-item2")
+            .forEach((t) => t.classList.remove("active-tab2"));
+          tab.classList.add("active-tab2");
+        });
+      });
+
+      setTimeout(() => showPage("login"), 2200);
+    </script>
+  </body>
+</html>
