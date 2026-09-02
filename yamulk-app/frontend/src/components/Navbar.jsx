@@ -68,7 +68,16 @@ export default function Navbar() {
           </button>
 
           <Link to="/profile" className="nav-avatar">
-            <div className="avatar">{initials}</div>
+            {user?.picture ? (
+              <img
+                src={user.picture}
+                alt={user.name}
+                style={{ width: '50%', height: '50%', borderRadius: '50%', objectFit: 'cover' }}
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="avatar">{initials}</div>
+            )}
           </Link>
           <button
             className="hamburger"

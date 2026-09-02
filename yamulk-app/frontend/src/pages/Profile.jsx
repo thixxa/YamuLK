@@ -44,14 +44,23 @@ export default function Profile() {
             {/* Avatar card */}
             <div className="profile-avatar-card">
               <div className="profile-avatar-ring">
-                <div className="avatar avatar-xl">
-                  {userForm.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                </div>
+                {user?.picture ? (
+                  <img
+                    src={user.picture}
+                    alt={user.name}
+                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="avatar avatar-xl">
+                    {userForm.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                  </div>
+                )}
                 <button className="avatar-edit-btn" id="btn-edit-avatar">📷</button>
               </div>
               <div className="profile-name">{userForm.name}</div>
               <div className="profile-username">@{userForm.username}</div>
-              <div className="profile-email">{userForm.email || 'No email set'}</div>
+              <div className="profile-email">{userForm.email || user?.email || 'No email set'}</div>
               <button
                 className="btn btn-outline btn-block mt-4"
                 onClick={() => setEditing(!editing)}
