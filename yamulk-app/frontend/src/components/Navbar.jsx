@@ -3,11 +3,19 @@ import { Link, useLocation } from 'react-router-dom';
 import logo from '../assets/YamuLK_logo.png';
 import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext.jsx';
 
 export default function Navbar() {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { user } = useAuth();
+
+  // Get initials from name, e.g. "Kasun Perera" → "KP"
+  const initials = user?.name
+    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : '?';
+
 
   const navLinks = [
     { path: '/home', label: 'Home' },
@@ -60,7 +68,7 @@ export default function Navbar() {
           </button>
 
           <Link to="/profile" className="nav-avatar">
-            <div className="avatar">KP</div>
+            <div className="avatar">{initials}</div>
           </Link>
           <button
             className="hamburger"

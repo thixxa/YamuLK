@@ -2,19 +2,40 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 import logo from '../assets/YamuLK_logo.png';
+import { useAuth } from '../context/AuthContext.jsx';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login, register } = useAuth();
   const [mode, setMode] = useState('login');
   const [form, setForm] = useState({ username: '', password: '', name: '', email: '', regUsername: '', regPassword: '' });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [focused, setFocused] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
-    setTimeout(() => { setLoading(false); navigate('/home'); }, 1200);
+
+    try {
+      if (mode === 'login') {
+        await login({ name: form.username, password: form.password });
+        navigate('/home');
+      } else {
+        await register({ name: form.regUsername, email: form.email, password: form.regPassword });
+        // After successful register, switch to login tab
+        setMode('login');
+        setForm({ ...form, username: form.regUsername, password: '' });
+        setError('✅ Account created! Please sign in.');
+      }
+    } catch (err) {
+      setError(err.message || 'Something went wrong. Try again.');
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   return (
     <div className="ng-auth">
@@ -151,14 +172,23 @@ export default function Login() {
                 : <><span>{mode === 'login' ? 'Sign In' : 'Create Account'}</span><span className="ng-arrow">↗</span></>
               }
             </button>
+
+            {/* API error / success message */}
+            {error && (
+              <div style={{
+                marginTop: 12,
+                padding: '10px 14px',
+                borderRadius: 10,
+                fontSize: 13,
+                fontWeight: 500,
+                background: error.startsWith('✅') ? 'rgba(0,200,100,0.12)' : 'rgba(255,80,80,0.12)',
+                color: error.startsWith('✅') ? '#00c864' : '#ff6464',
+                border: `1px solid ${error.startsWith('✅') ? 'rgba(0,200,100,0.25)' : 'rgba(255,80,80,0.25)'}`,
+              }}>
+                {error}
+              </div>
+            )}
           </form>
-
-          <div className="ng-divider"><span>or</span></div>
-
-          <button className="ng-guest" id="btn-guest" onClick={() => navigate('/home')}>
-            <span className="ng-guest-icon">🌐</span>
-            <span>Continue as Guest</span>
-          </button>
         </div>
 
         {/* Stats strip */}

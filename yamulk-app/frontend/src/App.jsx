@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
+import { useAuth } from './context/AuthContext.jsx';
 
 import Splash from './pages/Splash';
 import Login from './pages/Login';
@@ -13,6 +14,12 @@ import Weather from './pages/Weather';
 import SavedTrips from './pages/SavedTrips';
 import Profile from './pages/Profile';
 
+// Redirect to /login if user is not authenticated
+function ProtectedRoute({ children }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -20,18 +27,22 @@ export default function App() {
         <Route path="/" element={<Navigate to="/splash" replace />} />
         <Route path="/splash" element={<Splash />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/explore" element={<Explore />} />
-        <Route path="/destination/:id" element={<DestinationDetail />} />
-        <Route path="/planner" element={<TripPlanner />} />
-        <Route path="/budget" element={<Budget />} />
-        <Route path="/route" element={<RoutePlanner />} />
-        <Route path="/weather" element={<Weather />} />
-        <Route path="/saved" element={<SavedTrips />} />
-        <Route path="/profile" element={<Profile />} />
+
+        {/* Protected pages — require login */}
+        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
+        <Route path="/destination/:id" element={<ProtectedRoute><DestinationDetail /></ProtectedRoute>} />
+        <Route path="/planner" element={<ProtectedRoute><TripPlanner /></ProtectedRoute>} />
+        <Route path="/budget" element={<ProtectedRoute><Budget /></ProtectedRoute>} />
+        <Route path="/route" element={<ProtectedRoute><RoutePlanner /></ProtectedRoute>} />
+        <Route path="/weather" element={<ProtectedRoute><Weather /></ProtectedRoute>} />
+        <Route path="/saved" element={<ProtectedRoute><SavedTrips /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/splash" replace />} />
       </Routes>
     </BrowserRouter>
   );
 }
+
