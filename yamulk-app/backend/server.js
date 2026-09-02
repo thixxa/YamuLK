@@ -6,6 +6,7 @@ import userRouter from './Routes/userRoute.js'
 import destinationRouter from './Routes/destinationRouter.js';
 import tripRouter from './Routes/tripRouter.js';
 import weatherRouter from './Routes/weatherRouter.js';
+import reviewRouter from './Routes/reviewRouter.js'
 
 dotenv.config()
 
@@ -24,6 +25,8 @@ app.use('/user',userRouter)
 app.use('/destinations',destinationRouter)
 app.use('/trip',tripRouter)
 app.use('/weather',weatherRouter)
+app.use('/review',reviewRouter)
+
 
 app.get('/', (req, res) => {
   res.send('Hello, World!');

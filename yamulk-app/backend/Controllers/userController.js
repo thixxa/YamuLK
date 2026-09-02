@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import User from "../Models/userModel.js";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
 export async function getUsers(req, res) {
   try {
@@ -29,7 +29,7 @@ export async function login(req, res) {
       return res.status(400).json({ message: "Incorrect password" });
     }
 
-     // Generate token
+    // Generate token
     const token = jwt.sign({ id: user._id }, process.env.JWT_KEY, {
       expiresIn: "7d",
     });
@@ -39,7 +39,7 @@ export async function login(req, res) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, 
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({ message: "Login success", token: token, user: { name: user.name, email: user.email } });
@@ -85,5 +85,47 @@ export async function register(req, res) {
   } catch (error) {
     console.log(error);
     return res.status(400).json({ message: "register error" });
+  }
+}
+
+export async function updatProfilePwd(req, res) {
+  try {
+    const { name,oldPassword, password } = req.body;
+
+    if (!name || !password) {
+      return res.status(400).json({ message: "Nothing to update" });
+    }
+
+    const user = await User.findById(req.user._id).select("+password");
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    //update username
+
+    user.name = name.trim();
+
+    //update password
+
+    const isOldPwdMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isOldPwdMatch) {
+      return res.status(400).json({ message: "Old password not matched" });
+    }
+
+    const samePassword = await bcrypt.compare(password, user.password);
+
+    if (samePassword) {
+      return res.status(400).json({ message: "New password want to change" });
+    }
+
+    const hashedNewPassowrd = await bcrypt.hash(password, 10);
+
+    user.password = hashedNewPassowrd;
+
+    await user.save();
+    return res.status(200).json({ message: "updated successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "update error" });
   }
 }
