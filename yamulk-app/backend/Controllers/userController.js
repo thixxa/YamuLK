@@ -13,20 +13,20 @@ export async function getUsers(req, res) {
 }
 
 export async function login(req, res) {
-  const { name, password } = req.body;
+  const { email, password } = req.body;
 
-  if (!name || !password) {
+  if (!email || !password) {
     return res.status(400).json({ message: "Inputs missing" });
   }
   try {
-    const user = await User.findOne({ name }).select("+password");
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
-      return res.status(400).json({ message: "user not found" });
+      return res.status(400).json({ message: "No account found with this email" });
     }
     const isPassword = await bcrypt.compare(password, user.password);
 
     if (!isPassword) {
-      return res.status(400).json({ message: "password incorrect" });
+      return res.status(400).json({ message: "Incorrect password" });
     }
 
     // Generate token
@@ -42,7 +42,7 @@ export async function login(req, res) {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json({ message: "Login success", token: token });
+    return res.status(200).json({ message: "Login success", token: token, user: { name: user.name, email: user.email } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "login error", error });

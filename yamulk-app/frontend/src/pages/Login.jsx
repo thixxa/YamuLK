@@ -2,19 +2,89 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 import logo from '../assets/YamuLK_logo.png';
+import { useAuth } from '../context/AuthContext.jsx';
+import { useGoogleLogin } from '@react-oauth/google';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login, register, loginWithGoogle } = useAuth();
   const [mode, setMode] = useState('login');
-  const [form, setForm] = useState({ username: '', password: '', name: '', email: '', regUsername: '', regPassword: '' });
-  const [loading, setLoading] = useState(false);
-  const [focused, setFocused] = useState(null);
 
-  const handleSubmit = (e) => {
+  // ── Form state ──────────────────────────────────────────────────────────────
+  const [form, setForm] = useState({
+    // Login fields
+    loginEmail: '',
+    loginPassword: '',
+    // Register fields
+    regName: '',
+    regEmail: '',
+    regPassword: '',
+    regConfirmPassword: '',
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [focused, setFocused] = useState(null);
+  const [showLoginPw, setShowLoginPw] = useState(false);
+  const [showRegPw, setShowRegPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+
+  const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
+
+  // ── Google OAuth handler ────────────────────────────────────────────────────
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setGoogleLoading(true);
+      setError('');
+      try {
+        await loginWithGoogle(tokenResponse);
+        navigate('/home');
+      } catch (err) {
+        setError(err.message || 'Google sign-in failed. Try again.');
+      } finally {
+        setGoogleLoading(false);
+      }
+    },
+    onError: () => {
+      setError('Google sign-in was cancelled or failed.');
+    },
+  });
+
+  // ── Submit handler ──────────────────────────────────────────────────────────
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
+    if (mode === 'register') {
+      if (form.regPassword !== form.regConfirmPassword) {
+        setError('Passwords do not match.');
+        return;
+      }
+      if (form.regPassword.length < 6) {
+        setError('Password must be at least 6 characters.');
+        return;
+      }
+    }
+
     setLoading(true);
-    setTimeout(() => { setLoading(false); navigate('/home'); }, 1200);
+    try {
+      if (mode === 'login') {
+        await login({ email: form.loginEmail, password: form.loginPassword });
+        navigate('/home');
+      } else {
+        await register({ name: form.regName, email: form.regEmail, password: form.regPassword });
+        setMode('login');
+        setForm((prev) => ({ ...prev, loginEmail: form.regEmail, loginPassword: '' }));
+        setError('✅ Account created! Please sign in.');
+      }
+    } catch (err) {
+      setError(err.message || 'Something went wrong. Try again.');
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   return (
     <div className="ng-auth">
@@ -75,71 +145,172 @@ export default function Login() {
         <div className="ng-glass-card">
           <form onSubmit={handleSubmit} id={mode === 'login' ? 'login-form' : 'register-form'}>
 
-            {mode === 'register' && (
-              <div className="ng-row-2">
-                <div className={`ng-field ${focused === 'name' ? 'ng-field-focus' : ''}`}>
-                  <label>Full Name</label>
-                  <input
-                    type="text" id="register-name" placeholder="Kasun Perera"
-                    value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                    onFocus={() => setFocused('name')} onBlur={() => setFocused(null)}
-                    required
-                  />
-                </div>
-                <div className={`ng-field ${focused === 'email' ? 'ng-field-focus' : ''}`}>
+            {/* ── LOGIN FIELDS ── */}
+            {mode === 'login' && (
+              <>
+                {/* Email */}
+                <div className={`ng-field ${focused === 'loginEmail' ? 'ng-field-focus' : ''}`}>
                   <label>Email</label>
-                  <input
-                    type="email" id="register-email" placeholder="kasun@example.com"
-                    value={form.email}
-                    onChange={e => setForm({ ...form, email: e.target.value })}
-                    onFocus={() => setFocused('email')} onBlur={() => setFocused(null)}
-                    required
-                  />
+                  <div className="ng-input-wrap">
+                    <span className="ng-input-icon">📧</span>
+                    <input
+                      type="email"
+                      id="login-email"
+                      placeholder="kasun@example.com"
+                      value={form.loginEmail}
+                      onChange={set('loginEmail')}
+                      onFocus={() => setFocused('loginEmail')}
+                      onBlur={() => setFocused(null)}
+                      required
+                      autoComplete="email"
+                    />
+                  </div>
                 </div>
-              </div>
+
+                {/* Password */}
+                <div className={`ng-field ${focused === 'loginPassword' ? 'ng-field-focus' : ''}`}>
+                  <div className="ng-field-header">
+                    <label>Password</label>
+                    <span className="ng-forgot">Forgot?</span>
+                  </div>
+                  <div className="ng-input-wrap">
+                    <span className="ng-input-icon">🔒</span>
+                    <input
+                      type={showLoginPw ? 'text' : 'password'}
+                      id="login-password"
+                      placeholder="••••••••"
+                      value={form.loginPassword}
+                      onChange={set('loginPassword')}
+                      onFocus={() => setFocused('loginPassword')}
+                      onBlur={() => setFocused(null)}
+                      required
+                      autoComplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      className="ng-pw-toggle"
+                      onClick={() => setShowLoginPw((v) => !v)}
+                      tabIndex={-1}
+                    >
+                      {showLoginPw ? '👁️' : '👁'}
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
 
-            <div className={`ng-field ${focused === 'username' ? 'ng-field-focus' : ''}`}>
-              <label>Username</label>
-              <div className="ng-input-wrap">
-                <span className="ng-input-icon">@</span>
-                <input
-                  type="text"
-                  id={mode === 'login' ? 'login-username' : 'register-username'}
-                  placeholder="your_username"
-                  value={mode === 'login' ? form.username : form.regUsername}
-                  onChange={e => setForm(mode === 'login'
-                    ? { ...form, username: e.target.value }
-                    : { ...form, regUsername: e.target.value }
-                  )}
-                  onFocus={() => setFocused('username')} onBlur={() => setFocused(null)}
-                  required
-                />
-              </div>
-            </div>
+            {/* ── REGISTER FIELDS ── */}
+            {mode === 'register' && (
+              <>
+                {/* Full Name */}
+                <div className={`ng-field ${focused === 'regName' ? 'ng-field-focus' : ''}`}>
+                  <label>Full Name</label>
+                  <div className="ng-input-wrap">
+                    <span className="ng-input-icon">👤</span>
+                    <input
+                      type="text"
+                      id="register-name"
+                      placeholder="Kasun Perera"
+                      value={form.regName}
+                      onChange={set('regName')}
+                      onFocus={() => setFocused('regName')}
+                      onBlur={() => setFocused(null)}
+                      required
+                      autoComplete="name"
+                    />
+                  </div>
+                </div>
 
-            <div className={`ng-field ${focused === 'password' ? 'ng-field-focus' : ''}`}>
-              <div className="ng-field-header">
-                <label>Password</label>
-                {mode === 'login' && <span className="ng-forgot">Forgot?</span>}
-              </div>
-              <div className="ng-input-wrap">
-                <span className="ng-input-icon">🔒</span>
-                <input
-                  type="password"
-                  id={mode === 'login' ? 'login-password' : 'register-password'}
-                  placeholder={mode === 'login' ? '••••••••' : 'Min. 8 characters'}
-                  value={mode === 'login' ? form.password : form.regPassword}
-                  onChange={e => setForm(mode === 'login'
-                    ? { ...form, password: e.target.value }
-                    : { ...form, regPassword: e.target.value }
-                  )}
-                  onFocus={() => setFocused('password')} onBlur={() => setFocused(null)}
-                  required
-                />
-              </div>
-            </div>
+                {/* Email */}
+                <div className={`ng-field ${focused === 'regEmail' ? 'ng-field-focus' : ''}`}>
+                  <label>Email</label>
+                  <div className="ng-input-wrap">
+                    <span className="ng-input-icon">📧</span>
+                    <input
+                      type="email"
+                      id="register-email"
+                      placeholder="kasun@example.com"
+                      value={form.regEmail}
+                      onChange={set('regEmail')}
+                      onFocus={() => setFocused('regEmail')}
+                      onBlur={() => setFocused(null)}
+                      required
+                      autoComplete="email"
+                    />
+                  </div>
+                </div>
 
+                {/* Password */}
+                <div className={`ng-field ${focused === 'regPassword' ? 'ng-field-focus' : ''}`}>
+                  <label>Password <span style={{ fontSize: 11, opacity: 0.55, fontWeight: 400 }}>(min. 6 chars)</span></label>
+                  <div className="ng-input-wrap">
+                    <span className="ng-input-icon">🔒</span>
+                    <input
+                      type={showRegPw ? 'text' : 'password'}
+                      id="register-password"
+                      placeholder="Create a strong password"
+                      value={form.regPassword}
+                      onChange={set('regPassword')}
+                      onFocus={() => setFocused('regPassword')}
+                      onBlur={() => setFocused(null)}
+                      required
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      className="ng-pw-toggle"
+                      onClick={() => setShowRegPw((v) => !v)}
+                      tabIndex={-1}
+                    >
+                      {showRegPw ? '👁️' : '👁'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm Password */}
+                <div className={`ng-field ${
+                  focused === 'regConfirm' ? 'ng-field-focus' : ''
+                } ${
+                  form.regConfirmPassword && form.regPassword !== form.regConfirmPassword
+                    ? 'ng-field-error'
+                    : ''
+                }`}>
+                  <div className="ng-field-header">
+                    <label>Confirm Password</label>
+                    {form.regConfirmPassword && form.regPassword !== form.regConfirmPassword && (
+                      <span style={{ fontSize: 11, color: '#ff6464' }}>Passwords don’t match</span>
+                    )}
+                    {form.regConfirmPassword && form.regPassword === form.regConfirmPassword && (
+                      <span style={{ fontSize: 11, color: '#00c864' }}>✓ Match</span>
+                    )}
+                  </div>
+                  <div className="ng-input-wrap">
+                    <span className="ng-input-icon">🔐</span>
+                    <input
+                      type={showConfirmPw ? 'text' : 'password'}
+                      id="register-confirm-password"
+                      placeholder="Re-enter your password"
+                      value={form.regConfirmPassword}
+                      onChange={set('regConfirmPassword')}
+                      onFocus={() => setFocused('regConfirm')}
+                      onBlur={() => setFocused(null)}
+                      required
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      className="ng-pw-toggle"
+                      onClick={() => setShowConfirmPw((v) => !v)}
+                      tabIndex={-1}
+                    >
+                      {showConfirmPw ? '👁️' : '👁'}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Submit */}
             <button
               type="submit"
               className="ng-submit"
@@ -151,13 +322,49 @@ export default function Login() {
                 : <><span>{mode === 'login' ? 'Sign In' : 'Create Account'}</span><span className="ng-arrow">↗</span></>
               }
             </button>
+
+            {/* Message */}
+            {error && (
+              <div style={{
+                marginTop: 12,
+                padding: '10px 14px',
+                borderRadius: 10,
+                fontSize: 13,
+                fontWeight: 500,
+                background: error.startsWith('✅') ? 'rgba(0,200,100,0.12)' : 'rgba(255,80,80,0.12)',
+                color: error.startsWith('✅') ? '#00c864' : '#ff6464',
+                border: `1px solid ${error.startsWith('✅') ? 'rgba(0,200,100,0.25)' : 'rgba(255,80,80,0.25)'}`,
+              }}>
+                {error}
+              </div>
+            )}
           </form>
 
-          <div className="ng-divider"><span>or</span></div>
+          {/* ── Divider ── */}
+          <div className="ng-divider"><span>or continue with</span></div>
 
-          <button className="ng-guest" id="btn-guest" onClick={() => navigate('/home')}>
-            <span className="ng-guest-icon">🌐</span>
-            <span>Continue as Guest</span>
+          {/* ── Google Sign-In Button ── */}
+          <button
+            className="ng-google-btn"
+            id="btn-google-login"
+            onClick={() => handleGoogleLogin()}
+            disabled={googleLoading || loading}
+            type="button"
+          >
+            {googleLoading ? (
+              <><div className="ng-spinner" /><span>Signing in...</span></>
+            ) : (
+              <>
+                {/* Google G SVG logo */}
+                <svg width="20" height="20" viewBox="0 0 48 48" style={{ flexShrink: 0 }}>
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                </svg>
+                <span>Continue with Google</span>
+              </>
+            )}
           </button>
         </div>
 

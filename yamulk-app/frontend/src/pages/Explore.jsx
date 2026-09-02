@@ -63,7 +63,7 @@ export default function Explore() {
               key={cat.id}
               className={`tab-item ${activeCategory === cat.id ? 'active' : ''}`}
               onClick={() => setActiveCategory(cat.id)}
-              style={{ minWidth: 120 }}
+              style={{ minWidth: 225 }}
             >
               <span style={{ fontSize: 16, marginRight: 6 }}>{cat.emoji}</span>
               {cat.label}

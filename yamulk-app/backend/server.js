@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import { connectDB } from './config/db.js';
 import userRouter from './Routes/userRoute.js'
 import destinationRouter from './Routes/destinationRouter.js';
@@ -11,6 +12,12 @@ dotenv.config()
 
 const PORT = process.env.PORT || 3000
 const app = express();
+
+// Allow the Vite dev server to call this API
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+}));
 
 app.use(express.json());
 

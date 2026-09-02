@@ -24,10 +24,10 @@ const destinationSchema = new mongoose.Schema(
       trim: true,
       maxlength: 3000,
     },
-    imageURL: {
-      type: String,
+    imageURLs: {
+      type: [String],
       required: true,
-      trim: true,
+      validate: [arr => arr.length > 0, 'At least one image URL is required'],
     },
     location: {
       type: String,

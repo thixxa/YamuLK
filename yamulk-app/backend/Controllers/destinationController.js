@@ -18,7 +18,7 @@ export async function searchDestinations(req, res) {
       },
     })
       .select(
-        "name category province description imageURL location averageRating estimatedCost popularity"
+        "name category province description imageURLs location averageRating estimatedCost popularity"
       )
       .sort({ popularity: -1, averageRating: -1 })
       .limit(20);
@@ -63,3 +63,14 @@ export async function getDestinationById(req, res) {
     });
   }
 }
+
+// POST /destinations — Create a new destination
+export async function createDestination(req, res) {
+  try {
+    const destination = await Destination.create(req.body);
+    return res.status(201).json(destination);
+  } catch (error) {
+    console.error("Create destination error:", error);
+    return res.status(400).json({ message: error.message });
+  }
+}

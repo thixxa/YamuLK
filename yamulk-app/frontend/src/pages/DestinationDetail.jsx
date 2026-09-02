@@ -30,8 +30,19 @@ export default function DestinationDetail() {
           {/* Left column */}
           <div className="detail-left">
             {/* Hero image */}
-            <div className="detail-hero" style={{ background: dest.color }}>
-              <span className="detail-hero-emoji">{dest.photos[activePhoto]}</span>
+            <div
+              className="detail-hero"
+              style={!dest.imageURLs?.[activePhoto] ? { background: dest.color } : {}}
+            >
+              {dest.imageURLs?.[activePhoto] ? (
+                <img
+                  src={dest.imageURLs[activePhoto]}
+                  alt={dest.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <span className="detail-hero-emoji">{dest.photos?.[activePhoto] || dest.emoji}</span>
+              )}
               <button
                 className={`fav-btn ${saved ? 'saved' : ''}`}
                 onClick={() => setSaved(!saved)}
@@ -45,13 +56,21 @@ export default function DestinationDetail() {
 
             {/* Photo thumbnails */}
             <div className="photo-thumbs">
-              {dest.photos.map((p, i) => (
+              {(dest.imageURLs?.length > 0 ? dest.imageURLs : dest.photos || []).map((item, i) => (
                 <div
                   key={i}
                   className={`photo-thumb ${activePhoto === i ? 'active' : ''}`}
                   onClick={() => setActivePhoto(i)}
                 >
-                  {p}
+                  {dest.imageURLs?.[i] ? (
+                    <img
+                      src={dest.imageURLs[i]}
+                      alt={`${dest.name} photo ${i + 1}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }}
+                    />
+                  ) : (
+                    item
+                  )}
                 </div>
               ))}
             </div>
@@ -59,9 +78,11 @@ export default function DestinationDetail() {
             {/* Title & meta */}
             <h1 className="detail-title">{dest.name}</h1>
             <div className="detail-meta">
-              <span className="rating">⭐ <strong>{dest.rating}</strong> ({dest.reviews.toLocaleString()} reviews)</span>
-              <span>📍 {dest.distance}</span>
-              <span>☀️ Best: {dest.bestTime}</span>
+              <span className="rating">⭐ <strong>{dest.averageRating ?? dest.rating}</strong>
+                {dest.reviews && ` (${dest.reviews.toLocaleString()} reviews)`}
+              </span>
+              {dest.distance && <span>📍 {dest.distance}</span>}
+              <span>☀️ Best: {dest.bestTime || 'Year-round'}</span>
             </div>
 
             {/* Tags */}
@@ -130,7 +151,9 @@ export default function DestinationDetail() {
               <div className="info-grid">
                 <div className="info-card">
                   <div className="info-label">ESTIMATED COST</div>
-                  <div className="info-value">Rs. {dest.costPerDay.toLocaleString()}/day</div>
+                  <div className="info-value">
+                    Rs. {(dest.estimatedCost ?? dest.costPerDay)?.toLocaleString()}/day
+                  </div>
                 </div>
                 <div className="info-card">
                   <div className="info-label">WEATHER</div>

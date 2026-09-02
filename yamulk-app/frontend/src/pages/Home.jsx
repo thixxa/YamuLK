@@ -35,7 +35,7 @@ export default function Home() {
         <div className="home-hero-content">
           <div className="hero-badge">
             <span className="hero-badge-dot"></span>
-            🇱🇰 Sri Lanka Travel Platform
+            Sri Lankan Travel Platform
           </div>
           <h1 className="hero-title">Where do you want to<br /><span className="grad-text">explore next?</span></h1>
           <p className="hero-sub">Discover hidden beaches, mystic waterfalls, epic mountains &amp; ancient heritage — all in one place</p>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { useAuth } from '../context/AuthContext.jsx';
 import './Profile.css';
 
 const menuItems = [
@@ -21,13 +22,14 @@ const stats = [
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [editing, setEditing] = useState(false);
-  const [user, setUser] = useState({
-    name: 'Kasun Perera',
-    email: 'kasun.perera@email.com',
-    username: 'kasun_travels',
-    phone: '+94 77 123 4567',
-    city: 'Colombo',
+  const [userForm, setUserForm] = useState({
+    name: user?.name || 'Traveller',
+    email: '',
+    username: user?.name || 'user',
+    phone: '',
+    city: '',
   });
 
   return (
@@ -42,12 +44,23 @@ export default function Profile() {
             {/* Avatar card */}
             <div className="profile-avatar-card">
               <div className="profile-avatar-ring">
-                <div className="avatar avatar-xl">KP</div>
+                {user?.picture ? (
+                  <img
+                    src={user.picture}
+                    alt={user.name}
+                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="avatar avatar-xl">
+                    {userForm.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                  </div>
+                )}
                 <button className="avatar-edit-btn" id="btn-edit-avatar">📷</button>
               </div>
-              <div className="profile-name">{user.name}</div>
-              <div className="profile-username">@{user.username}</div>
-              <div className="profile-email">{user.email}</div>
+              <div className="profile-name">{userForm.name}</div>
+              <div className="profile-username">@{userForm.username}</div>
+              <div className="profile-email">{userForm.email || user?.email || 'No email set'}</div>
               <button
                 className="btn btn-outline btn-block mt-4"
                 onClick={() => setEditing(!editing)}
@@ -90,8 +103,8 @@ export default function Profile() {
                     <input
                       type="text"
                       id="edit-name"
-                      value={user.name}
-                      onChange={e => setUser({ ...user, name: e.target.value })}
+                      value={userForm.name}
+                      onChange={e => setUserForm({ ...userForm, name: e.target.value })}
                     />
                   </div>
                   <div className="field-group">
@@ -99,8 +112,8 @@ export default function Profile() {
                     <input
                       type="text"
                       id="edit-username"
-                      value={user.username}
-                      onChange={e => setUser({ ...user, username: e.target.value })}
+                      value={userForm.username}
+                      onChange={e => setUserForm({ ...userForm, username: e.target.value })}
                     />
                   </div>
                   <div className="field-group">
@@ -108,8 +121,8 @@ export default function Profile() {
                     <input
                       type="email"
                       id="edit-email"
-                      value={user.email}
-                      onChange={e => setUser({ ...user, email: e.target.value })}
+                      value={userForm.email}
+                      onChange={e => setUserForm({ ...userForm, email: e.target.value })}
                     />
                   </div>
                   <div className="field-group">
@@ -117,8 +130,8 @@ export default function Profile() {
                     <input
                       type="tel"
                       id="edit-phone"
-                      value={user.phone}
-                      onChange={e => setUser({ ...user, phone: e.target.value })}
+                      value={userForm.phone}
+                      onChange={e => setUserForm({ ...userForm, phone: e.target.value })}
                     />
                   </div>
                   <div className="field-group">
@@ -126,8 +139,8 @@ export default function Profile() {
                     <input
                       type="text"
                       id="edit-city"
-                      value={user.city}
-                      onChange={e => setUser({ ...user, city: e.target.value })}
+                      value={userForm.city}
+                      onChange={e => setUserForm({ ...userForm, city: e.target.value })}
                     />
                   </div>
                   <div className="field-group">
@@ -177,7 +190,7 @@ export default function Profile() {
                 <div
                   className="profile-menu-item logout-item"
                   id="btn-logout"
-                  onClick={() => navigate('/login')}
+                  onClick={() => { logout(); navigate('/login'); }}
                 >
                   <div className="menu-icon-wrap">🚪</div>
                   <div className="menu-text">
