@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { destinations, transportModes } from '../data/mockData';
+import { transportModes } from '../data/mockData';
+import { searchDestinations } from '../api/destinations.js';
 import './TripPlanner.css';
 
 export default function TripPlanner() {
@@ -9,8 +10,11 @@ export default function TripPlanner() {
   const location = useLocation();
   const prefill = location.state?.destination;
 
+  const [destinations, setDestinations] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [form, setForm] = useState({
-    destination: prefill?.id || 'mirissa-beach',
+    destination: prefill?._id || prefill?.id || '',
     date: '',
     endDate: '',
     people: 2,
@@ -20,12 +24,39 @@ export default function TripPlanner() {
     notes: '',
   });
 
-  const selectedDest = destinations.find(d => d.id === form.destination) || destinations[0];
+  useEffect(() => {
+    async function loadDests() {
+      try {
+        const data = await searchDestinations('');
+        const dests = data.destinations || [];
+        setDestinations(dests);
+        if (!form.destination && dests.length > 0) {
+          setForm(f => ({ ...f, destination: dests[0]._id }));
+        }
+      } catch (err) {
+        console.error("Failed to load destinations:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadDests();
+  }, []);
+
+  const selectedDest = destinations.find(d => d._id === form.destination) || destinations[0];
 
   const handleSubmit = (e) => {
     e.preventDefault();
     navigate('/budget', { state: { trip: { ...form, destinationData: selectedDest } } });
   };
+
+  if (loading) {
+    return (
+      <div className="planner-page">
+        <Navbar />
+        <div style={{ padding: 40, textAlign: 'center' }}>Loading planner...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="planner-page">
@@ -51,7 +82,7 @@ export default function TripPlanner() {
                   onChange={e => setForm({ ...form, destination: e.target.value })}
                 >
                   {destinations.map(d => (
-                    <option key={d.id} value={d.id}>{d.name} — {d.province}</option>
+                    <option key={d._id} value={d._id}>{d.name} — {d.province}</option>
                   ))}
                 </select>
               </div>
@@ -75,8 +106,11 @@ export default function TripPlanner() {
                     id="planner-end-date"
                     value={form.endDate}
                     onChange={e => setForm({ ...form, endDate: e.target.value })}
+                    required
+                    min={form.date || undefined}
                   />
                 </div>
+
               </div>
 
               {/* People & Budget */}
@@ -160,45 +194,48 @@ export default function TripPlanner() {
           </div>
 
           {/* Destination preview */}
-          <div className="planner-preview">
-            <div className="preview-hero" style={{ background: selectedDest.color }}>
-              <span className="preview-emoji">{selectedDest.emoji}</span>
+          {selectedDest && (
+            <div className="planner-preview">
+              <div className="preview-hero" style={{ background: selectedDest.color || 'var(--primary)' }}>
+                <span className="preview-emoji">{selectedDest.emoji || '🗺️'}</span>
+              </div>
+              <div className="preview-body">
+                <h3 className="preview-name">{selectedDest.name}</h3>
+                <p className="text-muted text-sm">{selectedDest.province}</p>
+
+                <div className="preview-stats">
+                  <div className="preview-stat">
+                    <span className="preview-stat-val">⭐ {selectedDest.averageRating ?? selectedDest.rating ?? 0}</span>
+                    <span className="preview-stat-lbl">Rating</span>
+                  </div>
+                  <div className="preview-stat">
+                    <span className="preview-stat-val">Rs. {(selectedDest.estimatedCost ?? selectedDest.costPerDay ?? 0).toLocaleString()}</span>
+                    <span className="preview-stat-lbl">per day</span>
+                  </div>
+                  <div className="preview-stat">
+                    <span className="preview-stat-val">{selectedDest.weather?.emoji || '☀️'} {selectedDest.weather?.temp || '28'}°C</span>
+                    <span className="preview-stat-lbl">Weather</span>
+                  </div>
+                </div>
+
+                <p className="preview-desc">{selectedDest.description?.slice(0, 120)}...</p>
+
+                <div className="preview-tags">
+                  {(selectedDest.tags || []).slice(0, 3).map(tag => (
+                    <span key={tag} className="chip">{tag}</span>
+                  ))}
+                </div>
+
+                <div className="preview-best-time">
+                  <span>🗓️</span>
+                  <span><strong>Best time to visit:</strong> {selectedDest.bestTime || 'Year-round'}</span>
+                </div>
+              </div>
             </div>
-            <div className="preview-body">
-              <h3 className="preview-name">{selectedDest.name}</h3>
-              <p className="text-muted text-sm">{selectedDest.province}</p>
-
-              <div className="preview-stats">
-                <div className="preview-stat">
-                  <span className="preview-stat-val">⭐ {selectedDest.rating}</span>
-                  <span className="preview-stat-lbl">Rating</span>
-                </div>
-                <div className="preview-stat">
-                  <span className="preview-stat-val">Rs. {selectedDest.costPerDay.toLocaleString()}</span>
-                  <span className="preview-stat-lbl">per day</span>
-                </div>
-                <div className="preview-stat">
-                  <span className="preview-stat-val">{selectedDest.weather.emoji} {selectedDest.weather.temp}°C</span>
-                  <span className="preview-stat-lbl">Weather</span>
-                </div>
-              </div>
-
-              <p className="preview-desc">{selectedDest.description.slice(0, 120)}...</p>
-
-              <div className="preview-tags">
-                {selectedDest.tags.slice(0, 3).map(tag => (
-                  <span key={tag} className="chip">{tag}</span>
-                ))}
-              </div>
-
-              <div className="preview-best-time">
-                <span>🗓️</span>
-                <span><strong>Best time to visit:</strong> {selectedDest.bestTime}</span>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
+

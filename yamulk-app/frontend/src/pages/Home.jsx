@@ -1,14 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import DestinationCard from '../components/DestinationCard';
-import { destinations, categories } from '../data/mockData';
+import { categories } from '../data/mockData';
+import { searchDestinations } from '../api/destinations.js';
 import './Home.css';
 
 export default function Home() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
+  const [destinations, setDestinations] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    async function loadDestinations() {
+      try {
+        const data = await searchDestinations('');
+        setDestinations(data.destinations || []);
+      } catch (err) {
+        console.error("Failed to load destinations:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadDestinations();
+  }, []);
 
   const filtered = destinations.filter(d => {
     const matchCategory = activeCategory === 'all' || d.category === activeCategory;
@@ -61,7 +78,7 @@ export default function Home() {
 
           {/* Quick stats */}
           <div className="hero-stats">
-            {['200+ Destinations', '9 Provinces', 'Budget Planner', 'Route Maps'].map(s => (
+            {[`${destinations.length}+ Destinations`, '9 Provinces', 'Budget Planner', 'Route Maps'].map(s => (
               <span key={s} className="hero-stat-item"><span className="hero-stat-dot"></span>{s}</span>
             ))}
           </div>
@@ -105,7 +122,7 @@ export default function Home() {
             </div>
             {filtered.length > 0 ? (
               <div className="grid-3" id="search-results">
-                {filtered.map(d => <DestinationCard key={d.id} destination={d} />)}
+                {filtered.map(d => <DestinationCard key={d._id || d.id} destination={d} />)}
               </div>
             ) : (
               <div className="no-results">
@@ -125,7 +142,7 @@ export default function Home() {
               <span className="section-link" onClick={() => navigate('/explore')}>See all</span>
             </div>
             <div className="grid-3" id="recommended-grid">
-              {recommended.map(d => <DestinationCard key={d.id} destination={d} />)}
+              {recommended.map(d => <DestinationCard key={d._id || d.id} destination={d} />)}
             </div>
 
             {/* Historical Sites */}
@@ -134,7 +151,7 @@ export default function Home() {
               <span className="section-link" onClick={() => setActiveCategory('historical')}>View all</span>
             </div>
             <div className="grid-3" id="historical-grid">
-              {historical.map(d => <DestinationCard key={d.id} destination={d} />)}
+              {historical.map(d => <DestinationCard key={d._id || d.id} destination={d} />)}
             </div>
 
             {/* CTA Banner */}
@@ -154,3 +171,4 @@ export default function Home() {
     </div>
   );
 }
+

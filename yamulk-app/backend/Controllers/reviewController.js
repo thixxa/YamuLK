@@ -26,7 +26,7 @@ export async function addReview(req, res) {
 
     // Recalculate average rating for destination
     const stats = await Review.aggregate([
-      { $match: { destinationId: isValidDestination._id } },  //Only look at the reviews that belong to THIS destination
+      { $match: { destinationId: isValidDestination._id } }, //Only look at the reviews that belong to THIS destination
       { $group: { _id: "$destinationId", avgRating: { $avg: "$rating" } } }, //Group them together and calculate the average
     ]);
     //Clean up and round the number
@@ -34,7 +34,7 @@ export async function addReview(req, res) {
       stats.length > 0 ? Math.round(stats[0].avgRating * 10) / 10 : 0;
 
     await Destination.findByIdAndUpdate(id, { averageRating: newAverage });
-    
+
     return res.status(201).json({
       message: "Review saved successfully",
       review: newReview,
@@ -48,5 +48,25 @@ export async function addReview(req, res) {
     }
     console.error("addReview error:", error);
     return res.status(500).json({ message: "Error adding review" });
+  }
+}
+
+export async function getAllReviews(req, res) {
+  try {
+    const id = req.params.destinationId;
+
+    const isDestination = await Destination.findById(id);
+    if (!isDestination) {
+      return res.status(400).json({ message: "Destination not found" });
+    }
+
+    const reviews = await Review.find({ destinationId: id })
+      .populate("userId", "name")
+      .sort({ createdAt: -1 });
+    return res
+      .status(200)
+      .json({ message: "Got all the reviews", count: reviews.length, reviews });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed getting reviews" });
   }
 }

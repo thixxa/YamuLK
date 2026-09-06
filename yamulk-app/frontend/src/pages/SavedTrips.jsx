@@ -1,20 +1,63 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { savedTrips, destinations } from '../data/mockData';
+import { getSavedItems, removeSavedItem } from '../api/savedItems.js';
 import './SavedTrips.css';
 
 export default function SavedTrips() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('itineraries');
-  const [trips, setTrips] = useState(savedTrips);
+  
+  const [trips, setTrips] = useState([]);
+  const [favourites, setFavourites] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const itineraries = trips.filter(t => t.type === 'itinerary');
-  const favourites = trips.filter(t => t.type === 'favourite');
+  useEffect(() => {
+    fetchSavedItems();
+  }, []);
 
-  const removeTrip = (id) => {
-    setTrips(trips.filter(t => t.id !== id));
+  const fetchSavedItems = async () => {
+    setLoading(true);
+    try {
+      const { savedItems } = await getSavedItems();
+      // split into itineraries (trips) and favourites (destinations)
+      const t = savedItems.filter(item => item.itemType === 'trip');
+      const f = savedItems.filter(item => item.itemType === 'destination');
+      setTrips(t);
+      setFavourites(f);
+    } catch (err) {
+      console.error("Error fetching saved items:", err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const removeTrip = async (savedId) => {
+    try {
+      await removeSavedItem(savedId);
+      setTrips(trips.filter(t => t._id !== savedId));
+    } catch (err) {
+      console.error("Error removing trip:", err);
+    }
+  };
+
+  const removeFavourite = async (savedId) => {
+    try {
+      await removeSavedItem(savedId);
+      setFavourites(favourites.filter(f => f._id !== savedId));
+    } catch (err) {
+      console.error("Error removing favourite:", err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="saved-page">
+        <Navbar />
+        <div style={{ padding: 40, textAlign: 'center' }}>Loading saved items...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="saved-page">
@@ -23,7 +66,7 @@ export default function SavedTrips() {
         <div className="section-header">
           <div>
             <h1 className="section-title">🧳 Saved Trips</h1>
-            <p className="text-muted text-sm mt-1">{itineraries.length} itineraries · {favourites.length} favourites</p>
+            <p className="text-muted text-sm mt-1">{trips.length} itineraries · {favourites.length} favourites</p>
           </div>
           <button className="btn btn-primary" onClick={() => navigate('/planner')} id="btn-new-trip">
             + New Trip
@@ -49,46 +92,50 @@ export default function SavedTrips() {
         </div>
 
         {activeTab === 'itineraries' ? (
-          itineraries.length > 0 ? (
+          trips.length > 0 ? (
             <div className="saved-grid">
-              {itineraries.map(trip => (
-                <div key={trip.id} className="saved-itinerary-card" id={`itinerary-${trip.id}`}>
-                  <div className="saved-card-thumb" style={{ background: trip.color }}>
-                    <span>{trip.emoji}</span>
-                  </div>
-                  <div className="saved-card-info">
-                    <div className="saved-card-name">{trip.name}</div>
-                    <div className="saved-card-meta">
-                      <span>👥 {trip.people} people</span>
-                      <span>📅 {trip.days} days</span>
+              {trips.map(savedObj => {
+                const trip = savedObj.itemId;
+                if (!trip) return null;
+                const dest = trip.destinationId;
+                return (
+                  <div key={savedObj._id} className="saved-itinerary-card" id={`itinerary-${savedObj._id}`}>
+                    <div className="saved-card-thumb" style={{ background: dest?.color || 'var(--primary)' }}>
+                      <span>{dest?.emoji || '🗺️'}</span>
                     </div>
-                    <div className="saved-card-budget">
-                      💰 Rs. {trip.budget.toLocaleString()}
-                    </div>
-                    {trip.date && (
-                      <div className="saved-card-date text-xs text-muted">
-                        🗓️ {new Date(trip.date).toLocaleDateString('en-LK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    <div className="saved-card-info">
+                      <div className="saved-card-name">{dest?.name || 'Unknown Trip'}</div>
+                      <div className="saved-card-meta">
+                        <span>👥 {trip.people || 1} people</span>
                       </div>
-                    )}
+                      <div className="saved-card-budget">
+                        💰 Rs. {(trip.totalBudget || 0).toLocaleString()}
+                      </div>
+                      {trip.travelDate && (
+                        <div className="saved-card-date text-xs text-muted">
+                          🗓️ {new Date(trip.travelDate).toLocaleDateString('en-LK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </div>
+                      )}
+                    </div>
+                    <div className="saved-card-actions">
+                      <button
+                        className="btn btn-sm btn-primary"
+                        onClick={() => navigate('/planner')}
+                        id={`btn-edit-trip-${savedObj._id}`}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-sm btn-danger"
+                        onClick={() => removeTrip(savedObj._id)}
+                        id={`btn-delete-trip-${savedObj._id}`}
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
-                  <div className="saved-card-actions">
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={() => navigate('/planner')}
-                      id={`btn-edit-trip-${trip.id}`}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => removeTrip(trip.id)}
-                      id={`btn-delete-trip-${trip.id}`}
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="saved-empty">
@@ -103,30 +150,34 @@ export default function SavedTrips() {
         ) : (
           favourites.length > 0 ? (
             <div className="saved-grid">
-              {favourites.map(fav => (
-                <div
-                  key={fav.id}
-                  className="saved-fav-card"
-                  id={`fav-${fav.id}`}
-                  onClick={() => navigate(`/destination/${fav.destination}`)}
-                >
-                  <div className="saved-card-thumb" style={{ background: fav.color }}>
-                    <span>{fav.emoji}</span>
+              {favourites.map(favObj => {
+                const fav = favObj.itemId;
+                if (!fav) return null;
+                return (
+                  <div
+                    key={favObj._id}
+                    className="saved-fav-card"
+                    id={`fav-${favObj._id}`}
+                    onClick={() => navigate(`/destination/${fav._id}`)}
+                  >
+                    <div className="saved-card-thumb" style={{ background: fav.color || 'var(--primary)' }}>
+                      <span>{fav.emoji || '📍'}</span>
+                    </div>
+                    <div className="saved-card-info">
+                      <div className="saved-card-name">{fav.name}</div>
+                      <div className="text-xs text-muted">📍 {fav.province}</div>
+                    </div>
+                    <div className="fav-heart" onClick={(e) => { e.stopPropagation(); removeFavourite(favObj._id); }}>❤️</div>
                   </div>
-                  <div className="saved-card-info">
-                    <div className="saved-card-name">{fav.name}</div>
-                    <div className="text-xs text-muted">📍 {fav.province}</div>
-                  </div>
-                  <div className="fav-heart">❤️</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="saved-empty">
               <div className="saved-empty-icon">❤️</div>
               <h3>No favourite destinations yet</h3>
               <p>Explore destinations and tap the heart to save your favourites!</p>
-              <button className="btn btn-primary mt-4" onClick={() => navigate('/home')}>
+              <button className="btn btn-primary mt-4" onClick={() => navigate('/explore')}>
                 Explore Destinations
               </button>
             </div>

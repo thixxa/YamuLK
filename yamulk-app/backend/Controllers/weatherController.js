@@ -63,7 +63,7 @@ export async function getWeather(req, res) {
         forecast: weather.daily.time.map((date, index) => ({
             date,
             weatherCode: weather.daily.weather_code[index],
-            weather: getWeatherLabel(weather.current.weather_code),
+            weather: getWeatherLabel(weather.daily.weather_code[index]),
             maxTemperature: weather.daily.temperature_2m_max[index],
             minTemperature: weather.daily.temperature_2m_min[index],
             rainProbability: weather.daily.precipitation_probability_max[index],
@@ -81,28 +81,38 @@ export async function getWeather(req, res) {
 }
 
 async function getLatitudeLongitude(destination){
+    try {
+        // Add Sri Lanka to reduce wrong matches
+        const placeName = destination.location.split(",")[0].trim();
 
-    // Add Sri Lanka to reduce wrong matches
-    const placeName = destination.location.split(",")[0].trim();
-    console.log(placeName)
-    // Convert place name to latitude / longitude
-    const geocodingUrl =
-      `https://geocoding-api.open-meteo.com/v1/search` +
-      `?name=${encodeURIComponent(placeName)}` +
-      `&count=1` +
-      `&language=en` +
-      `&countryCode=LK`;
+        // Convert place name to latitude / longitude
+        const geocodingUrl =
+          `https://geocoding-api.open-meteo.com/v1/search` +
+          `?name=${encodeURIComponent(placeName)}` +
+          `&count=1` +
+          `&language=en` +
+          `&countryCode=LK`;
 
-    const geocodingResponse = await fetch(geocodingUrl);
+        const geocodingResponse = await fetch(geocodingUrl);
 
-    if (!geocodingResponse.ok) {
-      throw new Error("Geocoding service request failed");
+        if (geocodingResponse.ok) {
+            const geocodingData = await geocodingResponse.json();
+            if (geocodingData.results && geocodingData.results.length > 0) {
+                return geocodingData;
+            }
+        }
+    } catch (error) {
+        console.error("Geocoding service error:", error);
     }
 
-    const geocodingData = await geocodingResponse.json();
-    console.log(geocodingData)
-
-    return geocodingData
+    // Fallback to Colombo coordinates if location not found or API fails
+    return {
+        results: [{
+            latitude: 6.9271,
+            longitude: 79.8612,
+            name: "Colombo (Fallback)"
+        }]
+    };
 }
 
 function getWeatherLabel(code) {

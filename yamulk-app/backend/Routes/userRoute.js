@@ -3,15 +3,15 @@ import {
   getUsers,
   login,
   register,
-  updatProfilePwd,
+  updateProfile,
 } from "../Controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const userRouter = express.Router();
 
-userRouter.get("/", getUsers);
+userRouter.get("/", protect, getUsers);       // now protected
 userRouter.post("/", login);
 userRouter.post("/register", register);
-userRouter.patch("/updateProfile", protect, updatProfilePwd);
+userRouter.patch("/updateProfile", protect, updateProfile);
 
 export default userRouter;

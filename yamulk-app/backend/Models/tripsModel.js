@@ -81,6 +81,17 @@ const tripSchema = new mongoose.Schema(
       ref: "Budget",
       default: null,
     },
+    
+    waypoints: [
+      {
+        name: { type: String, required: true },
+        location: { type: String },
+        latitude: { type: Number },
+        longitude: { type: Number },
+        order: { type: Number },
+        notes: { type: String, default: "" }
+      }
+    ],
 
     status: {
       type: String,

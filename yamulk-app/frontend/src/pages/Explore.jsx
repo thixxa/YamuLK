@@ -1,26 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import DestinationCard from '../components/DestinationCard';
-import { destinations, categories } from '../data/mockData';
+import { categories } from '../data/mockData';
+import { searchDestinations } from '../api/destinations.js';
 
 export default function Explore() {
+  const [destinations, setDestinations] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('rating');
 
+  useEffect(() => {
+    async function loadDestinations() {
+      setLoading(true);
+      try {
+        const data = await searchDestinations(search);
+        setDestinations(data.destinations || []);
+      } catch (err) {
+        console.error("Failed to load destinations:", err);
+        setDestinations([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    // Simple debounce could go here, but for now fetch on change
+    const timer = setTimeout(loadDestinations, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const filtered = destinations
     .filter(d => {
       const matchCat = activeCategory === 'all' || d.category === activeCategory;
-      const matchSearch = !search || d.name.toLowerCase().includes(search.toLowerCase()) ||
-        d.province.toLowerCase().includes(search.toLowerCase());
-      return matchCat && matchSearch;
+      return matchCat;
     })
     .sort((a, b) => {
-      if (sortBy === 'rating') return b.rating - a.rating;
-      if (sortBy === 'cost-low') return a.costPerDay - b.costPerDay;
-      if (sortBy === 'cost-high') return b.costPerDay - a.costPerDay;
+      // averageRating or rating (fallback for older mock data)
+      const aRating = a.averageRating ?? a.rating ?? 0;
+      const bRating = b.averageRating ?? b.rating ?? 0;
+      const aCost = a.estimatedCost ?? a.costPerDay ?? 0;
+      const bCost = b.estimatedCost ?? b.costPerDay ?? 0;
+
+      if (sortBy === 'rating') return bRating - aRating;
+      if (sortBy === 'cost-low') return aCost - bCost;
+      if (sortBy === 'cost-high') return bCost - aCost;
       return a.name.localeCompare(b.name);
     });
+
+  if (loading && destinations.length === 0) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
+        <Navbar />
+        <div style={{ padding: 40, textAlign: 'center' }}>Loading destinations...</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
@@ -84,7 +118,7 @@ export default function Explore() {
         {filtered.length > 0 ? (
           <div className="grid-3 stagger-children">
             {filtered.map((d, i) => (
-              <div key={d.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+              <div key={d._id || d.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
                 <DestinationCard destination={d} />
               </div>
             ))}

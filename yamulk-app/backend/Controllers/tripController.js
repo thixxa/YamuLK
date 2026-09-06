@@ -96,15 +96,16 @@ export async function deleteTrip(req, res) {
     });
 
     if (!deletedTrip) {
-      return res.status(400).json({ message: "Trip not found" });
+      return res.status(404).json({ message: "Trip not found or you are not authorized" });
     }
 
-    return res.status(200).json({ message: "Trip Deleted.." });
+    return res.status(200).json({ message: "Trip Deleted" });
   } catch (error) {
     console.error(error);
-    return res.status(400).json({ message: "deleteTrip error", error: error });
+    return res.status(500).json({ message: "deleteTrip error", error: error.message });
   }
 }
+
 
 export async function updateTrip(req, res) {
   try {
@@ -119,6 +120,7 @@ export async function updateTrip(req, res) {
       "specialNotes",
       "itinerary",
       "status",
+      "waypoints",
     ];
 
     const updates = {};

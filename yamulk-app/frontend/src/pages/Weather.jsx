@@ -1,29 +1,83 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { destinations, weatherData } from '../data/mockData';
+import { getWeather } from '../api/weather.js';
+import { searchDestinations } from '../api/destinations.js';
 import './Weather.css';
 
 export default function Weather() {
-  const [selectedDest, setSelectedDest] = useState('mirissa-beach');
+  const location = useLocation();
+  const [selectedDest, setSelectedDest] = useState(location.state?.destinationId || null);
+  const [destinations, setDestinations] = useState([]);
+  const [weatherData, setWeatherData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const dest = destinations.find(d => d.id === selectedDest) || destinations[0];
-  const weather = {
-    ...weatherData.current,
-    location: `${dest.name}, ${dest.province}`,
-    temp: dest.weather.temp,
-    emoji: dest.weather.emoji,
-    condition: dest.weather.condition,
-  };
+  // Load all destinations for dropdown
+  useEffect(() => {
+    async function init() {
+      try {
+        const dRes = await searchDestinations('');
+        const dests = dRes.destinations || [];
+        setDestinations(dests);
+        if (!selectedDest && dests.length > 0) {
+          setSelectedDest(dests[0]._id);
+        }
+      } catch (err) {
+        console.error("Failed to load destinations for weather:", err);
+      }
+    }
+    init();
+  }, []);
+
+  // Fetch weather when selected destination changes
+  useEffect(() => {
+    if (!selectedDest) return;
+    async function loadWeather() {
+      setLoading(true);
+      try {
+        const wRes = await getWeather(selectedDest);
+        setWeatherData(wRes);
+      } catch (err) {
+        console.error("Failed to load weather:", err);
+        setWeatherData(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadWeather();
+  }, [selectedDest]);
+
+  const dest = destinations.find(d => d._id === selectedDest) || null;
+  const weather = weatherData ? {
+    location: `${dest?.name}, ${dest?.province}`,
+    temp: weatherData.currentWeather?.temperature || 28,
+    emoji: "🌤️",
+    condition: weatherData.forecast?.[0]?.weather || "Sunny",
+    feelsLike: weatherData.currentWeather?.feelsLike || 30,
+    rainProb: weatherData.forecast?.[0]?.rainProbability || 0,
+    humidity: 60, // not returned by open-meteo basic
+    windSpeed: weatherData.currentWeather?.windSpeed || 10,
+    uvIndex: 6, // not returned by open-meteo basic
+  } : null;
 
   const getWeatherGradient = (condition) => {
+    if (!condition) return 'linear-gradient(160deg, #2ea0be, #0e7c86)';
     if (condition.toLowerCase().includes('rain')) return 'linear-gradient(160deg, #4a7a9b, #2d5f7e)';
     if (condition.toLowerCase().includes('cloud')) return 'linear-gradient(160deg, #7090a8, #4a6a82)';
     if (condition.toLowerCase().includes('mist') || condition.toLowerCase().includes('fog'))
       return 'linear-gradient(160deg, #8a9aaa, #6a7a88)';
     return 'linear-gradient(160deg, #2ea0be, #0e7c86)';
   };
+
+  if (loading || !dest || !weather) {
+    return (
+      <div className="weather-page">
+        <Navbar />
+        <div style={{ padding: 40, textAlign: 'center' }}>Loading weather...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="weather-page">
@@ -46,7 +100,7 @@ export default function Weather() {
             onChange={e => setSelectedDest(e.target.value)}
           >
             {destinations.map(d => (
-              <option key={d.id} value={d.id}>{d.name}</option>
+              <option key={d._id} value={d._id}>{d.name}</option>
             ))}
           </select>
         </div>
@@ -69,16 +123,20 @@ export default function Weather() {
             <div className="forecast-card">
               <h3 className="font-bold mb-4">7-Day Forecast</h3>
               <div className="forecast-row">
-                {weatherData.forecast.map((day, i) => (
-                  <div key={i} className={`forecast-day ${i === 0 ? 'today' : ''}`}>
-                    <div className="forecast-day-name">{day.day}</div>
-                    <div className="forecast-emoji">{day.emoji}</div>
-                    <div className="forecast-temps">
-                      <span className="forecast-high">{day.high}°</span>
-                      <span className="forecast-low">{day.low}°</span>
+                {(weatherData?.forecast || []).slice(0, 7).map((day, i) => {
+                  const dayName = day.date ? new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' }) : `Day ${i+1}`;
+                  const emoji = day.weather?.toLowerCase().includes('rain') ? '🌧️' : day.weather?.toLowerCase().includes('cloud') ? '⛅' : '☀️';
+                  return (
+                    <div key={i} className={`forecast-day ${i === 0 ? 'today' : ''}`}>
+                      <div className="forecast-day-name">{dayName}</div>
+                      <div className="forecast-emoji">{emoji}</div>
+                      <div className="forecast-temps">
+                        <span className="forecast-high">{Math.round(day.maxTemperature)}°</span>
+                        <span className="forecast-low">{Math.round(day.minTemperature)}°</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

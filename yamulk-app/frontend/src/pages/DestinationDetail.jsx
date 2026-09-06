@@ -1,17 +1,87 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { destinations, reviews } from '../data/mockData';
+import { getDestinationById } from '../api/destinations.js';
+import { getAllReviews } from '../api/reviews.js';
+import { saveItem, removeSavedItemByItemId } from '../api/savedItems.js';
 import './DestinationDetail.css';
 
 export default function DestinationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [saved, setSaved] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
 
-  const dest = destinations.find(d => d.id === id) || destinations[0];
-  const destReviews = reviews.filter(r => r.destination === dest.id);
+  const [dest, setDest] = useState(null);
+  const [destReviews, setDestReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const destData = await getDestinationById(id);
+        setDest(destData);
+        
+        try {
+          const reviewData = await getAllReviews(id);
+          setDestReviews(reviewData.reviews || []);
+        } catch {
+          // Reviews are optional — don't fail the whole page
+          setDestReviews([]);
+        }
+      } catch (error) {
+        console.error("Failed to load destination details:", error);
+        setError("Destination not found.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [id]);
+
+
+  // Toggle save/unsave destination
+  const handleSave = async () => {
+    if (saveLoading) return;
+    setSaveLoading(true);
+    try {
+      if (saved) {
+        await removeSavedItemByItemId(id);
+        setSaved(false);
+      } else {
+        await saveItem('destination', id);
+        setSaved(true);
+      }
+    } catch (err) {
+      console.error('Save error:', err);
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="detail-page">
+        <Navbar />
+        <div style={{ padding: 40, textAlign: 'center' }}>Loading destination...</div>
+      </div>
+    );
+  }
+
+  if (error || !dest) {
+    return (
+      <div className="detail-page">
+        <Navbar />
+        <div style={{ padding: 40, textAlign: 'center' }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>😕</div>
+          <p>{error || 'Destination not found.'}</p>
+          <button className="btn btn-outline mt-4" onClick={() => navigate('/explore')}>Back to Explore</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="detail-page">
@@ -45,11 +115,12 @@ export default function DestinationDetail() {
               )}
               <button
                 className={`fav-btn ${saved ? 'saved' : ''}`}
-                onClick={() => setSaved(!saved)}
+                onClick={handleSave}
                 id="btn-save"
-                title="Save destination"
+                title={saved ? 'Remove from saved' : 'Save destination'}
+                disabled={saveLoading}
               >
-                {saved ? '❤️' : '🤍'}
+                {saveLoading ? '⏳' : saved ? '❤️' : '🤍'}
               </button>
               <div className="detail-badge badge badge-primary">{dest.category}</div>
             </div>
@@ -78,8 +149,8 @@ export default function DestinationDetail() {
             {/* Title & meta */}
             <h1 className="detail-title">{dest.name}</h1>
             <div className="detail-meta">
-              <span className="rating">⭐ <strong>{dest.averageRating ?? dest.rating}</strong>
-                {dest.reviews && ` (${dest.reviews.toLocaleString()} reviews)`}
+              <span className="rating">⭐ <strong>{dest.averageRating ?? dest.rating ?? 0}</strong>
+                {destReviews.length > 0 && ` (${destReviews.length} reviews)`}
               </span>
               {dest.distance && <span>📍 {dest.distance}</span>}
               <span>☀️ Best: {dest.bestTime || 'Year-round'}</span>
@@ -87,7 +158,7 @@ export default function DestinationDetail() {
 
             {/* Tags */}
             <div className="detail-tags">
-              {dest.tags.map(tag => (
+              {(dest.tags || []).map(tag => (
                 <span key={tag} className="chip">{tag}</span>
               ))}
             </div>
@@ -98,7 +169,7 @@ export default function DestinationDetail() {
             {/* Highlights */}
             <h3 className="nearby-title">✨ Highlights</h3>
             <div className="highlights-grid">
-              {dest.highlights.map((h, i) => (
+              {(dest.highlights || []).map((h, i) => (
                 <div key={i} className="highlight-item">
                   <span className="highlight-check">✓</span>
                   <span>{h}</span>
@@ -115,9 +186,10 @@ export default function DestinationDetail() {
               >
                 🗺️ Plan Trip
               </button>
-              <button className="btn btn-outline" onClick={() => setSaved(!saved)} id="btn-save2">
-                {saved ? '❤️ Saved' : '🤍 Save'}
+              <button className="btn btn-outline" onClick={handleSave} id="btn-save2" disabled={saveLoading}>
+                {saveLoading ? '⏳' : saved ? '❤️ Saved' : '🤍 Save'}
               </button>
+
               <button className="btn btn-outline" id="btn-share">📤 Share</button>
             </div>
 
@@ -127,16 +199,16 @@ export default function DestinationDetail() {
                 <h3 className="nearby-title mt-8">💬 Traveller Reviews</h3>
                 <div className="reviews-list">
                   {destReviews.map(rev => (
-                    <div key={rev.id} className="review-card">
+                    <div key={rev._id || rev.id} className="review-card">
                       <div className="review-header">
-                        <div className="avatar" style={{ width: 36, height: 36, fontSize: 13 }}>{rev.avatar}</div>
+                        <div className="avatar" style={{ width: 36, height: 36, fontSize: 13 }}>{rev.userId?.name?.charAt(0) || "U"}</div>
                         <div>
-                          <div className="review-user">{rev.user}</div>
-                          <div className="review-date text-xs text-muted">{rev.date}</div>
+                          <div className="review-user">{rev.userId?.name || "Unknown User"}</div>
+                          <div className="review-date text-xs text-muted">{new Date(rev.createdAt || rev.date).toLocaleDateString()}</div>
                         </div>
                         <div className="review-stars">{'⭐'.repeat(rev.rating)}</div>
                       </div>
-                      <p className="review-text">{rev.text}</p>
+                      <p className="review-text">{rev.comment || rev.text}</p>
                     </div>
                   ))}
                 </div>
@@ -157,7 +229,7 @@ export default function DestinationDetail() {
                 </div>
                 <div className="info-card">
                   <div className="info-label">WEATHER</div>
-                  <div className="info-value">{dest.weather.emoji} {dest.weather.temp}°C</div>
+                  <div className="info-value">{dest.weather?.emoji || "☀️"} {dest.weather?.temp || "28"}°C</div>
                 </div>
                 <div className="info-card">
                   <div className="info-label">PROVINCE</div>
@@ -165,13 +237,13 @@ export default function DestinationDetail() {
                 </div>
                 <div className="info-card">
                   <div className="info-label">DISTANCE</div>
-                  <div className="info-value" style={{ fontSize: 13 }}>{dest.distance.split(' ')[0]}</div>
+                  <div className="info-value" style={{ fontSize: 13 }}>{dest.distance?.split(' ')[0] || "Unknown"}</div>
                 </div>
               </div>
 
               {/* Nearby Hotels */}
               <h4 className="nearby-title">🏨 Nearby Hotels</h4>
-              {dest.nearby.hotels.map(h => (
+              {(dest.nearby?.hotels || []).map(h => (
                 <div key={h} className="nearby-chip">
                   <span>🏨</span> {h}
                   <span className="nearby-arrow">›</span>
@@ -180,7 +252,7 @@ export default function DestinationDetail() {
 
               {/* Nearby Restaurants */}
               <h4 className="nearby-title">🍽️ Restaurants</h4>
-              {dest.nearby.restaurants.map(r => (
+              {(dest.nearby?.restaurants || []).map(r => (
                 <div key={r} className="nearby-chip">
                   <span>🍽️</span> {r}
                   <span className="nearby-arrow">›</span>
@@ -189,7 +261,7 @@ export default function DestinationDetail() {
 
               {/* Nearby Attractions */}
               <h4 className="nearby-title">🌟 Nearby Attractions</h4>
-              {dest.nearby.attractions.map(a => (
+              {(dest.nearby?.attractions || []).map(a => (
                 <div key={a} className="nearby-chip">
                   <span>📍</span> {a}
                   <span className="nearby-arrow">›</span>
@@ -198,7 +270,7 @@ export default function DestinationDetail() {
 
               <button
                 className="btn btn-primary btn-block mt-6"
-                onClick={() => navigate('/weather')}
+                onClick={() => navigate(`/weather`, { state: { destinationId: id } })}
                 id="btn-check-weather"
               >
                 🌤️ Check Weather

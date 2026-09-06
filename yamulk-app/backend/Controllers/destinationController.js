@@ -5,23 +5,18 @@ export async function searchDestinations(req, res) {
   try {
     const search = req.query.search?.trim();
 
-    if (!search) {
-      return res.status(400).json({
-        message: "Please provide a destination name",
-      });
-    }
+    const query = search
+      ? {
+          name: {
+            $regex: search,
+            $options: "i",
+          },
+        }
+      : {};
 
-    const destinations = await Destination.find({
-      name: {
-        $regex: search,
-        $options: "i",
-      },
-    })
-      .select(
-        "name category province description imageURLs location averageRating estimatedCost popularity"
-      )
+    const destinations = await Destination.find(query)
       .sort({ popularity: -1, averageRating: -1 })
-      .limit(20);
+      .limit(50);
 
     if (destinations.length === 0) {
       return res.status(404).json({

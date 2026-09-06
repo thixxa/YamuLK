@@ -1,5 +1,6 @@
 // Base API client — all requests go through here
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 
 function getToken() {
   return localStorage.getItem('yamulk_token');

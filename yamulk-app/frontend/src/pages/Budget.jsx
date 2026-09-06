@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { createTrip } from '../api/trips.js';
+import { updateBudget } from '../api/budget.js';
+import { saveItem } from '../api/savedItems.js';
 import './Budget.css';
 
 const DEFAULT_ITEMS = [
@@ -13,6 +16,17 @@ const DEFAULT_ITEMS = [
   { id: 'emergency', label: 'Emergency Fund', emoji: '🆘', amount: 500 },
 ];
 
+// Full mapping from TripPlanner transport IDs → backend enum values
+const TRANSPORT_MAP = {
+  bus: 'Bus',
+  train: 'Train',
+  car: 'Car',
+  motorcycle: 'Motorcycle',
+  bicycle: 'Bicycle',
+  walk: 'Walk',
+  other: 'Other',
+};
+
 export default function Budget() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,7 +34,20 @@ export default function Budget() {
 
   const totalBudget = tripData?.budget || 15000;
 
+  // Calculate trip duration in days (default to 1 if dates are invalid)
+  const tripDays = (() => {
+    if (tripData?.date && tripData?.endDate) {
+      const start = new Date(tripData.date);
+      const end = new Date(tripData.endDate);
+      const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+      return diff > 0 ? diff : 1;
+    }
+    return 1;
+  })();
+
   const [items, setItems] = useState(DEFAULT_ITEMS);
+  const [saving, setSaving] = useState(false);
+  const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
 
   const totalSpend = items.reduce((sum, item) => sum + item.amount, 0);
   const remaining = totalBudget - totalSpend;
@@ -33,6 +60,60 @@ export default function Budget() {
     ));
   };
 
+  const saveTrip = async () => {
+    if (!tripData) {
+      setStatusMsg({ type: 'error', text: 'No trip data found. Please start from the planner.' });
+      return;
+    }
+    setSaving(true);
+    setStatusMsg({ type: '', text: '' });
+    try {
+      // 1. Create Trip
+      const destId = tripData.destinationData?._id || tripData.destination;
+
+      // Map transport mode ID to backend enum (full mapping)
+      const transportMode = TRANSPORT_MAP[tripData.transport?.toLowerCase()] || 'Other';
+
+      const tripPayload = {
+        destinationId: destId,
+        travelDate: tripData.date || new Date().toISOString(),
+        returnDate: tripData.endDate || new Date(Date.now() + 86400000).toISOString(),
+        people: tripData.people,
+        transportMode,
+        accommodationType: tripData.accommodation,
+        totalBudget: totalBudget,
+        specialNotes: tripData.notes || '',
+      };
+      
+      const tripRes = await createTrip(tripPayload);
+      const tripId = tripRes.trip._id;
+
+      // 2. Create/Update Budget
+      const budgetPayload = {
+        transport: items.find(i => i.id === 'transport')?.amount || 0,
+        accommodation: items.find(i => i.id === 'accommodation')?.amount || 0,
+        food: items.find(i => i.id === 'food')?.amount || 0,
+        other: (items.find(i => i.id === 'entrance')?.amount || 0) +
+               (items.find(i => i.id === 'activities')?.amount || 0) +
+               (items.find(i => i.id === 'shopping')?.amount || 0) +
+               (items.find(i => i.id === 'emergency')?.amount || 0),
+        userBudget: totalBudget
+      };
+      await updateBudget(tripId, budgetPayload);
+
+      // 3. Save to SavedTrips
+      await saveItem('trip', tripId);
+
+      setStatusMsg({ type: 'success', text: '✅ Trip saved successfully!' });
+      setTimeout(() => navigate('/saved'), 1500);
+    } catch (error) {
+      console.error("Error saving trip:", error);
+      setStatusMsg({ type: 'error', text: '❌ Failed to save trip: ' + error.message });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="budget-page">
       <Navbar />
@@ -41,7 +122,7 @@ export default function Budget() {
           <div>
             <h1 className="section-title">💰 Budget Calculator</h1>
             <p className="text-muted text-sm mt-1">
-              {tripData?.destinationData?.name || 'Your Trip'} · {tripData?.people || 2} people
+              {tripData?.destinationData?.name || 'Your Trip'} · {tripData?.people || 2} people · {tripDays} day{tripDays !== 1 ? 's' : ''}
             </p>
           </div>
           <button
@@ -52,6 +133,24 @@ export default function Budget() {
             ← Edit Plan
           </button>
         </div>
+
+        {/* Status message */}
+        {statusMsg.text && (
+          <div
+            className={`budget-status-msg ${statusMsg.type}`}
+            style={{
+              padding: '12px 16px',
+              borderRadius: 8,
+              marginBottom: 16,
+              background: statusMsg.type === 'success' ? 'rgba(76, 175, 80, 0.15)' : 'rgba(244, 67, 54, 0.15)',
+              border: `1px solid ${statusMsg.type === 'success' ? '#4CAF50' : '#f44336'}`,
+              color: statusMsg.type === 'success' ? '#4CAF50' : '#f44336',
+              fontWeight: 600,
+            }}
+          >
+            {statusMsg.text}
+          </div>
+        )}
 
         <div className="budget-layout">
           {/* Left: Summary */}
@@ -94,8 +193,8 @@ export default function Budget() {
                 <span className="font-bold">Rs. {Math.round(totalSpend / (tripData?.people || 2)).toLocaleString()}</span>
               </div>
               <div className="per-person-item">
-                <span>Per Day (estimate)</span>
-                <span className="font-bold">Rs. {Math.round(totalSpend / 2).toLocaleString()}</span>
+                <span>Per Day ({tripDays} day{tripDays !== 1 ? 's' : ''})</span>
+                <span className="font-bold">Rs. {Math.round(totalSpend / tripDays).toLocaleString()}</span>
               </div>
             </div>
 
@@ -157,8 +256,8 @@ export default function Budget() {
               >
                 🗺️ View Route
               </button>
-              <button className="btn btn-outline" id="btn-save-budget">
-                💾 Save Plan
+              <button className="btn btn-outline" id="btn-save-budget" onClick={saveTrip} disabled={saving}>
+                {saving ? '⏳ Saving...' : '💾 Save Plan'}
               </button>
               <button className="btn btn-ghost" id="btn-reset-budget" onClick={() => setItems(DEFAULT_ITEMS)}>
                 🔄 Reset
