@@ -6,11 +6,20 @@ import { categories } from '../data/mockData';
 import { searchDestinations } from '../api/destinations.js';
 import './Home.css';
 
+const SUPABASE_URL = import.meta.env.VITE_API_URL
+  ? 'https://oflwzkgjuqmvgnlclljh.supabase.co'
+  : 'https://oflwzkgjuqmvgnlclljh.supabase.co';
+
+const HOME_SLIDES = Array.from({ length: 6 }, (_, i) =>
+  `${SUPABASE_URL}/storage/v1/object/public/destination-images/home/home-${i + 1}.JPEG`
+);
+
 export default function Home() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [slideIndex, setSlideIndex] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,6 +34,14 @@ export default function Home() {
       }
     }
     loadDestinations();
+  }, []);
+
+  // Auto-advance hero slide every 2 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSlideIndex(i => (i + 1) % HOME_SLIDES.length);
+    }, 2000);
+    return () => clearInterval(timer);
   }, []);
 
   const filtered = destinations.filter(d => {
@@ -44,6 +61,19 @@ export default function Home() {
 
       {/* Hero Banner */}
       <div className="home-hero">
+        {/* ── Sliding background photos ── */}
+        <div className="hero-slides">
+          {HOME_SLIDES.map((url, i) => (
+            <div
+              key={i}
+              className={`hero-slide ${i === slideIndex ? 'active' : ''}`}
+              style={{ backgroundImage: `url(${url})` }}
+            />
+          ))}
+          {/* Dark overlay so text stays readable */}
+          <div className="hero-slide-overlay" />
+        </div>
+
         <div className="home-hero-bg">
           <div className="hero-orb hero-orb-1"></div>
           <div className="hero-orb hero-orb-2"></div>

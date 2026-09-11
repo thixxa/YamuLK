@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react';
-import { loginUser, registerUser } from '../api/auth.js';
+import { loginUser, registerUser, googleAuth } from '../api/auth.js';
 
 const AuthContext = createContext(null);
 
@@ -33,31 +33,16 @@ export function AuthProvider({ children }) {
     return await registerUser({ name, email, password });
   }, []);
 
-  // ── Google Login ───────────────────────────────────────────────────────────
-  // Note: Google OAuth requires a matching backend endpoint to exchange the
-  // access_token for a real JWT. Until that is implemented, Google login
-  // will show an informative error to the user.
+  // ── Google Login ────────────────────────────────────────────────────────────
   const loginWithGoogle = useCallback(async (tokenResponse) => {
-    // Fetch profile info from Google using the access token
-    const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-    });
-    if (!res.ok) throw new Error('Failed to fetch Google profile');
-
-    const profile = await res.json();
-
-    // TODO: Exchange Google profile for a real JWT from your backend
-    // e.g.: const data = await api.post('/user/google', { googleToken: tokenResponse.access_token });
-    // For now, throw a clear error so the UI can show a helpful message.
-    throw new Error(
-      'Google Sign-In requires a backend integration. Please use email/password login.'
-    );
-
-    // When backend is ready, replace the throw above with:
-    // localStorage.setItem('yamulk_token', data.token);
-    // localStorage.setItem('yamulk_user', JSON.stringify(data.user));
-    // setToken(data.token);
-    // setUser(data.user);
+    // Exchange the Google access_token for a YamuLK JWT via our backend
+    const data = await googleAuth({ access_token: tokenResponse.access_token });
+    // data = { message, token, user: { name, email } }
+    const userData = data.user || {};
+    localStorage.setItem('yamulk_token', data.token);
+    localStorage.setItem('yamulk_user', JSON.stringify(userData));
+    setToken(data.token);
+    setUser(userData);
   }, []);
 
   // ── Logout ─────────────────────────────────────────────────────────────────

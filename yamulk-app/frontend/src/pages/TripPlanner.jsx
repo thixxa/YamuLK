@@ -196,8 +196,19 @@ export default function TripPlanner() {
           {/* Destination preview */}
           {selectedDest && (
             <div className="planner-preview">
-              <div className="preview-hero" style={{ background: selectedDest.color || 'var(--primary)' }}>
-                <span className="preview-emoji">{selectedDest.emoji || '🗺️'}</span>
+              <div
+                className="preview-hero"
+                style={!selectedDest.imageURLs?.[0] ? { background: selectedDest.color || 'var(--primary)' } : {}}
+              >
+                {selectedDest.imageURLs?.[0] ? (
+                  <img
+                    src={selectedDest.imageURLs[0]}
+                    alt={selectedDest.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }}
+                  />
+                ) : (
+                  <span className="preview-emoji">{selectedDest.emoji || '🗺️'}</span>
+                )}
               </div>
               <div className="preview-body">
                 <h3 className="preview-name">{selectedDest.name}</h3>

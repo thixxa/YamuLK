@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import User from "../Models/userModel.js";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 // GET /user/ — list users (protected, no password exposed)
 export async function getUsers(req, res) {
@@ -125,5 +126,61 @@ export async function updateProfile(req, res) {
   } catch (error) {
     console.error("updateProfile error:", error);
     return res.status(500).json({ message: "update error" });
+  }
+}
+
+// POST /user/google — Google OAuth login / register
+export async function googleLogin(req, res) {
+  const { access_token } = req.body;
+
+  if (!access_token) {
+    return res.status(400).json({ message: "Google access token is required" });
+  }
+
+  try {
+    // Verify the access token with Google and fetch user profile
+    const googleRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: `Bearer ${access_token}` },
+    });
+
+    if (!googleRes.ok) {
+      return res.status(401).json({ message: "Invalid Google access token" });
+    }
+
+    const profile = await googleRes.json();
+    const { email, name, sub: googleId } = profile;
+
+    if (!email) {
+      return res.status(400).json({ message: "Could not retrieve email from Google account" });
+    }
+
+    // Find or create the user
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create a new account for this Google user with a secure random password
+      const randomPassword = crypto.randomBytes(32).toString("hex");
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+      user = new User({
+        name: name || email.split("@")[0],
+        email,
+        password: hashedPassword,
+      });
+      await user.save();
+    }
+
+    // Issue JWT
+    const token = jwt.sign({ id: user._id }, process.env.JWT_KEY, {
+      expiresIn: "7d",
+    });
+
+    return res.status(200).json({
+      message: "Google login successful",
+      token,
+      user: { name: user.name, email: user.email },
+    });
+  } catch (error) {
+    console.error("googleLogin error:", error);
+    return res.status(500).json({ message: "Google login failed" });
   }
 }

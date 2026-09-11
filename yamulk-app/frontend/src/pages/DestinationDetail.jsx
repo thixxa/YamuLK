@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { getDestinationById } from '../api/destinations.js';
@@ -12,6 +12,7 @@ export default function DestinationDetail() {
   const [saved, setSaved] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const [dest, setDest] = useState(null);
   const [destReviews, setDestReviews] = useState([]);
@@ -41,6 +42,35 @@ export default function DestinationDetail() {
     loadData();
   }, [id]);
 
+  // ── Lightbox helpers ─────────────────────────────────────────────────────────
+  const photos = dest?.imageURLs?.length > 0 ? dest.imageURLs : dest?.photos || [];
+
+  const openLightbox = useCallback((index) => {
+    setActivePhoto(index);
+    setLightboxOpen(true);
+  }, []);
+
+  const closeLightbox = useCallback(() => setLightboxOpen(false), []);
+
+  const lightboxPrev = useCallback(() =>
+    setActivePhoto(p => (p - 1 + photos.length) % photos.length), [photos.length]
+  );
+
+  const lightboxNext = useCallback(() =>
+    setActivePhoto(p => (p + 1) % photos.length), [photos.length]
+  );
+
+  // Escape / arrow key listener
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape')     closeLightbox();
+      if (e.key === 'ArrowLeft')  lightboxPrev();
+      if (e.key === 'ArrowRight') lightboxNext();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightboxOpen, closeLightbox, lightboxPrev, lightboxNext]);
 
   // Toggle save/unsave destination
   const handleSave = async () => {
@@ -108,7 +138,10 @@ export default function DestinationDetail() {
                 <img
                   src={dest.imageURLs[activePhoto]}
                   alt={dest.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  className="detail-hero-img"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'zoom-in' }}
+                  onClick={() => openLightbox(activePhoto)}
+                  title="Click to view fullscreen"
                 />
               ) : (
                 <span className="detail-hero-emoji">{dest.photos?.[activePhoto] || dest.emoji}</span>
@@ -131,7 +164,9 @@ export default function DestinationDetail() {
                 <div
                   key={i}
                   className={`photo-thumb ${activePhoto === i ? 'active' : ''}`}
-                  onClick={() => setActivePhoto(i)}
+                  onClick={() => { setActivePhoto(i); }}
+                  onDoubleClick={() => openLightbox(i)}
+                  title="Click to select · Double-click for fullscreen"
                 >
                   {dest.imageURLs?.[i] ? (
                     <img
@@ -286,6 +321,51 @@ export default function DestinationDetail() {
           </div>
         </div>
       </div>
+
+      {/* ── Lightbox ─────────────────────────────────────────────────── */}
+      {lightboxOpen && (
+        <div className="lightbox-overlay" onClick={closeLightbox} role="dialog" aria-modal="true">
+          {/* Stop click on inner content from closing */}
+          <div className="lightbox-inner" onClick={e => e.stopPropagation()}>
+
+            {/* Close button */}
+            <button className="lightbox-close" onClick={closeLightbox} title="Close (Esc)">✕</button>
+
+            {/* Counter */}
+            <div className="lightbox-counter">{activePhoto + 1} / {photos.length}</div>
+
+            {/* Prev arrow */}
+            {photos.length > 1 && (
+              <button className="lightbox-arrow lightbox-prev" onClick={lightboxPrev} title="Previous (←)">‹</button>
+            )}
+
+            {/* Photo */}
+            <img
+              src={dest.imageURLs?.[activePhoto] || ''}
+              alt={`${dest.name} — photo ${activePhoto + 1}`}
+              className="lightbox-img"
+            />
+
+            {/* Next arrow */}
+            {photos.length > 1 && (
+              <button className="lightbox-arrow lightbox-next" onClick={lightboxNext} title="Next (→)">›</button>
+            )}
+
+            {/* Thumbnail strip */}
+            <div className="lightbox-thumbstrip">
+              {dest.imageURLs?.map((url, i) => (
+                <img
+                  key={i}
+                  src={url}
+                  alt={`thumb ${i + 1}`}
+                  className={`lightbox-thumb ${i === activePhoto ? 'active' : ''}`}
+                  onClick={() => setActivePhoto(i)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

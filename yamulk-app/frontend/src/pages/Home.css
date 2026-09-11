@@ -8,6 +8,45 @@
   padding: 88px var(--space-6) 96px;
 }
 
+/* ── Background photo slider ── */
+.hero-slides {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.8s ease;
+  transform: scale(1.05);
+  animation: hero-kb 14s ease-in-out infinite alternate;
+}
+
+.hero-slide.active {
+  opacity: 0.68;   /* watermark level — low opacity so text is clear */
+}
+
+@keyframes hero-kb {
+  from { transform: scale(1.05); }
+  to   { transform: scale(1.12); }
+}
+
+/* Dark gradient overlay so text always stays readable */
+.hero-slide-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(10,17,23,0.55) 0%, rgba(10,17,23,0.40) 50%, rgba(10,17,23,0.70) 100%),
+    radial-gradient(ellipse at 70% 30%, rgba(52,211,153,0.08) 0%, transparent 55%),
+    radial-gradient(ellipse at 20% 80%, rgba(34,211,238,0.05) 0%, transparent 50%);
+  z-index: 1;
+}
+
+
 /* Soft ambient background */
 .home-hero::before {
   content: '';
@@ -21,7 +60,7 @@
 
 .home-hero-content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   max-width: 720px;
   margin: 0 auto;
   text-align: center;
