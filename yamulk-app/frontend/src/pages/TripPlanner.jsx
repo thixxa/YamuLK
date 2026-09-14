@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import MapView from '../components/MapView';
 import { transportModes } from '../data/mockData';
 import { searchDestinations } from '../api/destinations.js';
 import './TripPlanner.css';
@@ -23,6 +24,7 @@ export default function TripPlanner() {
     accommodation: 'hotel',
     notes: '',
   });
+  const [previewTab, setPreviewTab] = useState('photo'); // 'photo' | 'map'
 
   useEffect(() => {
     async function loadDests() {
@@ -196,20 +198,66 @@ export default function TripPlanner() {
           {/* Destination preview */}
           {selectedDest && (
             <div className="planner-preview">
-              <div
-                className="preview-hero"
-                style={!selectedDest.imageURLs?.[0] ? { background: selectedDest.color || 'var(--primary)' } : {}}
-              >
-                {selectedDest.imageURLs?.[0] ? (
-                  <img
-                    src={selectedDest.imageURLs[0]}
-                    alt={selectedDest.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }}
-                  />
-                ) : (
-                  <span className="preview-emoji">{selectedDest.emoji || '🗺️'}</span>
-                )}
+              {/* Tab bar */}
+              <div className="planner-preview-tabs">
+                <button
+                  className={`planner-preview-tab ${previewTab === 'photo' ? 'active' : ''}`}
+                  onClick={() => setPreviewTab('photo')}
+                  id="planner-tab-photo"
+                >
+                  📸 Photos
+                </button>
+                <button
+                  className={`planner-preview-tab ${previewTab === 'map' ? 'active' : ''}`}
+                  onClick={() => setPreviewTab('map')}
+                  id="planner-tab-map"
+                >
+                  🗺️ Location
+                </button>
               </div>
+
+              {previewTab === 'photo' ? (
+                <div
+                  className="preview-hero"
+                  style={!selectedDest.imageURLs?.[0] ? { background: selectedDest.color || 'var(--primary)' } : {}}
+                >
+                  {selectedDest.imageURLs?.[0] ? (
+                    <img
+                      src={selectedDest.imageURLs[0]}
+                      alt={selectedDest.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }}
+                    />
+                  ) : (
+                    <span className="preview-emoji">{selectedDest.emoji || '🗺️'}</span>
+                  )}
+                </div>
+              ) : (
+                <div className="planner-preview-map-wrap">
+                  {(selectedDest.latitude || selectedDest.lat) && (selectedDest.longitude || selectedDest.lng) ? (
+                    <MapView
+                      key={selectedDest._id || selectedDest.id || selectedDest.name}
+                      center={[selectedDest.latitude ?? selectedDest.lat, selectedDest.longitude ?? selectedDest.lng]}
+                      zoom={11}
+                      height="220px"
+                      markers={[{
+                        lat: selectedDest.latitude ?? selectedDest.lat,
+                        lng: selectedDest.longitude ?? selectedDest.lng,
+                        label: selectedDest.name,
+                        emoji: selectedDest.emoji || '📍',
+                        sub: selectedDest.province,
+                        type: 'pin',
+                      }]}
+                      interactive={true}
+                    />
+                  ) : (
+                    <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', flexDirection: 'column', gap: 8 }}>
+                      <span style={{ fontSize: 36 }}>🗺️</span>
+                      <p className="text-muted text-sm">No coordinates available</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="preview-body">
                 <h3 className="preview-name">{selectedDest.name}</h3>
                 <p className="text-muted text-sm">{selectedDest.province}</p>

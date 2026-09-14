@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import DestinationCard from '../components/DestinationCard';
+import MapView from '../components/MapView';
 import { categories } from '../data/mockData';
 import { searchDestinations } from '../api/destinations.js';
 
 export default function Explore() {
+  const navigate = useNavigate();
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('rating');
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'map'
 
   useEffect(() => {
     async function loadDestinations() {
@@ -24,7 +28,6 @@ export default function Explore() {
         setLoading(false);
       }
     }
-    // Simple debounce could go here, but for now fetch on change
     const timer = setTimeout(loadDestinations, 300);
     return () => clearTimeout(timer);
   }, [search]);
@@ -35,17 +38,28 @@ export default function Explore() {
       return matchCat;
     })
     .sort((a, b) => {
-      // averageRating or rating (fallback for older mock data)
       const aRating = a.averageRating ?? a.rating ?? 0;
       const bRating = b.averageRating ?? b.rating ?? 0;
       const aCost = a.estimatedCost ?? a.costPerDay ?? 0;
       const bCost = b.estimatedCost ?? b.costPerDay ?? 0;
-
       if (sortBy === 'rating') return bRating - aRating;
       if (sortBy === 'cost-low') return aCost - bCost;
       if (sortBy === 'cost-high') return bCost - aCost;
       return a.name.localeCompare(b.name);
     });
+
+  // Build markers for map view
+  const mapMarkers = filtered
+    .filter(d => (d.lat || d.latitude) && (d.lng || d.longitude))
+    .map(d => ({
+      lat: d.latitude ?? d.lat,
+      lng: d.longitude ?? d.lng,
+      label: d.name,
+      emoji: d.emoji || '📍',
+      sub: `${d.province} · ⭐ ${d.averageRating ?? d.rating ?? 0}`,
+      type: 'pin',
+      onClick: () => navigate(`/destination/${d._id || d.id}`),
+    }));
 
   if (loading && destinations.length === 0) {
     return (
@@ -87,6 +101,25 @@ export default function Explore() {
                 <option value="name">🔤 A-Z</option>
               </select>
             </div>
+            {/* View toggle */}
+            <div className="explore-view-toggle" id="explore-view-toggle">
+              <button
+                className={`explore-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                onClick={() => setViewMode('grid')}
+                id="btn-grid-view"
+                title="Grid View"
+              >
+                ☰ Grid
+              </button>
+              <button
+                className={`explore-toggle-btn ${viewMode === 'map' ? 'active' : ''}`}
+                onClick={() => setViewMode('map')}
+                id="btn-map-view"
+                title="Map View"
+              >
+                🗺️ Map
+              </button>
+            </div>
           </div>
         </div>
 
@@ -114,21 +147,42 @@ export default function Explore() {
           <div className="glow-line" style={{ flex: 1, margin: 0 }}></div>
         </div>
 
-        {/* Grid */}
-        {filtered.length > 0 ? (
-          <div className="grid-3 stagger-children">
-            {filtered.map((d, i) => (
-              <div key={d._id || d.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
-                <DestinationCard destination={d} />
+        {/* Map View */}
+        {viewMode === 'map' ? (
+          <div className="explore-map-container">
+            {mapMarkers.length > 0 ? (
+              <MapView
+                center={[7.8731, 80.7718]}
+                zoom={7}
+                height="600px"
+                markers={mapMarkers}
+                interactive={true}
+              />
+            ) : (
+              <div className="explore-map-empty">
+                <div style={{ fontSize: 48, marginBottom: 12 }}>🗺️</div>
+                <p className="text-muted">No destinations with map coordinates available.</p>
               </div>
-            ))}
+            )}
+            <p className="explore-map-hint">Click on a pin to view destination details</p>
           </div>
         ) : (
-          <div className="card card-lg" style={{ textAlign: 'center', padding: '80px 20px' }}>
-            <div style={{ fontSize: 60, marginBottom: 16, filter: 'drop-shadow(0 0 16px rgba(0,212,255,0.3))' }}>🔍</div>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 800, marginBottom: 8 }}>No matches found</h3>
-            <p className="text-muted">Try adjusting your search or category filters.</p>
-          </div>
+          /* Grid */
+          filtered.length > 0 ? (
+            <div className="grid-3 stagger-children">
+              {filtered.map((d, i) => (
+                <div key={d._id || d.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+                  <DestinationCard destination={d} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="card card-lg" style={{ textAlign: 'center', padding: '80px 20px' }}>
+              <div style={{ fontSize: 60, marginBottom: 16, filter: 'drop-shadow(0 0 16px rgba(0,212,255,0.3))' }}>🔍</div>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 800, marginBottom: 8 }}>No matches found</h3>
+              <p className="text-muted">Try adjusting your search or category filters.</p>
+            </div>
+          )
         )}
       </div>
     </div>

@@ -8,10 +8,7 @@ import { api } from '../api/api.js';
 import './Profile.css';
 
 const menuItems = [
-  { icon: '👤', label: 'User Details', sub: 'Personal information' },
-  { icon: '⚙️', label: 'Preferences', sub: 'Language, currency, theme' },
   { icon: '🧳', label: 'Saved Trips', sub: 'View your travel plans', action: '/saved' },
-  { icon: '🔔', label: 'Notifications', sub: 'Manage alerts & updates' },
   { icon: '🔒', label: 'Privacy & Security', sub: 'Password, data settings' },
   { icon: '❓', label: 'Help & Support', sub: 'FAQs, contact us' },
   { icon: '⭐', label: 'Rate the App', sub: 'Share your feedback' },

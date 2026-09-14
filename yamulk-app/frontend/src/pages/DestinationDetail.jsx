@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import MapView from '../components/MapView';
 import { getDestinationById } from '../api/destinations.js';
 import { getAllReviews } from '../api/reviews.js';
 import { saveItem, removeSavedItemByItemId } from '../api/savedItems.js';
+import { destinations as mockDestinations } from '../data/mockData';
 import './DestinationDetail.css';
 
 export default function DestinationDetail() {
@@ -312,11 +314,45 @@ export default function DestinationDetail() {
               </button>
               <button
                 className="btn btn-outline btn-block mt-3"
-                onClick={() => navigate('/route')}
+                onClick={() => navigate('/route', { state: { destination: dest } })}
                 id="btn-get-route"
               >
                 🗺️ Get Directions
               </button>
+
+              {/* Mini map — resolve coords from API or mockData fallback */}
+              {(() => {
+                const apiLat = dest.latitude;
+                const apiLng = dest.longitude;
+                const hasApiCoords = apiLat != null && apiLng != null && apiLat !== 0 && apiLng !== 0;
+                const mock = mockDestinations.find(
+                  d => d.name.toLowerCase() === dest.name?.toLowerCase() ||
+                       d.id === dest._id || d.id === dest.id
+                );
+                const lat = hasApiCoords ? apiLat : mock?.lat;
+                const lng = hasApiCoords ? apiLng : mock?.lng;
+                if (!lat || !lng) return null;
+                return (
+                  <div className="detail-mini-map">
+                    <div className="detail-mini-map-label">📍 Location on Map</div>
+                    <MapView
+                      key={`${dest._id || dest.id}-map`}
+                      center={[lat, lng]}
+                      zoom={12}
+                      height="220px"
+                      markers={[{
+                        lat,
+                        lng,
+                        label: dest.name,
+                        emoji: dest.emoji || '📍',
+                        sub: dest.province,
+                        type: 'pin',
+                      }]}
+                      interactive={false}
+                    />
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>

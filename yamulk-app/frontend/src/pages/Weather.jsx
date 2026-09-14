@@ -20,8 +20,20 @@ export default function Weather() {
         const dRes = await searchDestinations('');
         const dests = dRes.destinations || [];
         setDestinations(dests);
-        if (!selectedDest && dests.length > 0) {
+
+        // Only fall back to the first destination if NO destinationId was passed
+        // via navigation state. Reading location.state directly avoids the
+        // stale-closure issue where selectedDest still reads as null.
+        const passedId = location.state?.destinationId;
+        if (!passedId && dests.length > 0) {
           setSelectedDest(dests[0]._id);
+        } else if (passedId) {
+          // Ensure the passed ID actually exists in the loaded list
+          const exists = dests.some(d => d._id === passedId);
+          if (!exists && dests.length > 0) {
+            setSelectedDest(dests[0]._id); // passedId not found, fall back
+          }
+          // else: selectedDest is already set correctly from useState initialiser
         }
       } catch (err) {
         console.error("Failed to load destinations for weather:", err);

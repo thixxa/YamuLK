@@ -524,3 +524,79 @@ input, select, textarea { font-family: var(--font-body); outline: none; }
   .grid-3 { grid-template-columns: 1fr; }
   .grid-4 { grid-template-columns: 1fr 1fr; }
 }
+
+/* ============ EXPLORE — Map / Grid toggle ============ */
+.explore-view-toggle {
+  display: flex;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.explore-toggle-btn {
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  outline: none;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.explore-toggle-btn:hover { color: var(--text-sub); background: var(--bg-hover); }
+.explore-toggle-btn.active { background: var(--primary-dim); color: var(--primary); }
+
+.explore-map-container {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-lg);
+}
+.explore-map-empty {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+}
+.explore-map-hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: var(--space-3);
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-card);
+  margin: 0;
+}
+
+/* ============ TRIPPLANNER — Location map tab ============ */
+.planner-preview-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-card);
+  margin-bottom: 0;
+}
+.planner-preview-tab {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
+  outline: none;
+}
+.planner-preview-tab:hover { color: var(--text-sub); }
+.planner-preview-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.planner-preview-map-wrap {
+  border-radius: 0 0 var(--radius) var(--radius);
+  overflow: hidden;
+  position: relative;
+}
+

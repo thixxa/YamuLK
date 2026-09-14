@@ -23,6 +23,8 @@ export const destinations = [
     photos: ["🏖️", "🌅", "🐚", "🥥", "🐋"],
     bestTime: "Nov–Apr",
     highlights: ["Whale watching tours", "Sunset views", "Fresh seafood", "Snorkeling"],
+    lat: 5.9435,
+    lng: 80.4564,
   },
   {
     id: "diyaluma-falls",
@@ -46,6 +48,8 @@ export const destinations = [
     photos: ["💧", "🌿", "🏔️", "🌊", "🦋"],
     bestTime: "Year-round",
     highlights: ["Natural infinity pools", "Jungle trekking", "220m cascade", "Tea estate views"],
+    lat: 6.7161,
+    lng: 81.0005,
   },
   {
     id: "ella-rock",
@@ -69,6 +73,8 @@ export const destinations = [
     photos: ["⛰️", "🌄", "🚂", "🌿", "☁️"],
     bestTime: "Jan–Apr",
     highlights: ["Nine Arch Bridge views", "Tea estate panorama", "Cool climate", "Epic sunrise"],
+    lat: 6.8667,
+    lng: 81.0466,
   },
   {
     id: "sigiriya-rock",
@@ -92,6 +98,8 @@ export const destinations = [
     photos: ["🏛️", "🦁", "🌅", "🎨", "🐘"],
     bestTime: "May–Sep",
     highlights: ["UNESCO World Heritage", "Ancient frescoes", "Lion's Rock summit", "Water gardens"],
+    lat: 7.9572,
+    lng: 80.7603,
   },
   {
     id: "anuradhapura",
@@ -115,6 +123,8 @@ export const destinations = [
     photos: ["🏛️", "🌳", "🕌", "🌙", "🙏"],
     bestTime: "May–Sep",
     highlights: ["Oldest Bo Tree", "Ancient stupas", "Buddhist history", "Archaeological park"],
+    lat: 8.3114,
+    lng: 80.4037,
   },
   {
     id: "polonnaruwa",
@@ -138,6 +148,8 @@ export const destinations = [
     photos: ["🏛️", "🚲", "🗿", "🌿", "💎"],
     bestTime: "May–Sep",
     highlights: ["Giant Buddha statues", "UNESCO Heritage", "Cycling tours", "Ancient architecture"],
+    lat: 7.9403,
+    lng: 81.0188,
   },
   {
     id: "nilaveli-beach",
@@ -161,6 +173,8 @@ export const destinations = [
     photos: ["🏖️", "🐠", "🏝️", "🌊", "🐬"],
     bestTime: "Apr–Sep",
     highlights: ["Pigeon Island snorkeling", "Pristine white sand", "Coral reefs", "Uncrowded beaches"],
+    lat: 8.6896,
+    lng: 81.1963,
   },
   {
     id: "adams-peak",
@@ -184,6 +198,8 @@ export const destinations = [
     photos: ["⛰️", "🌅", "🙏", "🌙", "⭐"],
     bestTime: "Dec–May",
     highlights: ["Sacred footprint", "Sunrise spectacle", "Multi-faith pilgrimage", "Pre-dawn hike"],
+    lat: 6.8096,
+    lng: 80.4994,
   },
 ];
 
@@ -298,13 +314,14 @@ export const routes = [
       bike: { duration: "5h 00m", cost: "Rs. 500 (fuel)", stops: 4 },
     },
     waypoints: [
-      { name: "Colombo Fort", emoji: "🏙️", km: 0 },
-      { name: "Kalutara", emoji: "🌴", km: 43 },
-      { name: "Galle", emoji: "⛵", km: 128 },
-      { name: "Mirissa Beach", emoji: "🏖️", km: 168 },
+      { name: "Colombo Fort", emoji: "🏙️", km: 0,   lat: 6.9344,  lng: 79.8428, type: "start" },
+      { name: "Kalutara",     emoji: "🌴", km: 43,  lat: 6.5854,  lng: 79.9607, type: "waypoint" },
+      { name: "Galle",        emoji: "⛵", km: 128, lat: 6.0535,  lng: 80.2210, type: "waypoint" },
+      { name: "Mirissa Beach",emoji: "🏖️", km: 168, lat: 5.9435,  lng: 80.4564, type: "end" },
     ],
   },
 ];
+
 
 export const reviews = [
   { id: 1, user: "Kasun P.", avatar: "KP", rating: 5, text: "Absolutely breathtaking experience! The whale watching was unreal.", destination: "mirissa-beach", date: "2 days ago" },
