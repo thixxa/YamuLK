@@ -281,27 +281,54 @@ export default function DestinationDetail() {
               {/* Nearby Hotels */}
               <h4 className="nearby-title">🏨 Nearby Hotels</h4>
               {(dest.nearby?.hotels || []).map(h => (
-                <div key={h} className="nearby-chip">
+                <div
+                  key={h}
+                  className="nearby-chip nearby-chip--clickable"
+                  onClick={() => window.open(`https://www.google.com/maps/search/${encodeURIComponent(h + ' ' + dest.name + ' Sri Lanka')}`, '_blank')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={e => e.key === 'Enter' && window.open(`https://www.google.com/maps/search/${encodeURIComponent(h + ' ' + dest.name + ' Sri Lanka')}`, '_blank')}
+                  id={`hotel-${h.replace(/\s+/g, '-').toLowerCase()}`}
+                  title={`View ${h} on Google Maps`}
+                >
                   <span>🏨</span> {h}
-                  <span className="nearby-arrow">›</span>
+                  <span className="nearby-arrow">↗</span>
                 </div>
               ))}
 
               {/* Nearby Restaurants */}
               <h4 className="nearby-title">🍽️ Restaurants</h4>
               {(dest.nearby?.restaurants || []).map(r => (
-                <div key={r} className="nearby-chip">
+                <div
+                  key={r}
+                  className="nearby-chip nearby-chip--clickable"
+                  onClick={() => window.open(`https://www.google.com/maps/search/${encodeURIComponent(r + ' ' + dest.name + ' Sri Lanka')}`, '_blank')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={e => e.key === 'Enter' && window.open(`https://www.google.com/maps/search/${encodeURIComponent(r + ' ' + dest.name + ' Sri Lanka')}`, '_blank')}
+                  id={`restaurant-${r.replace(/\s+/g, '-').toLowerCase()}`}
+                  title={`View ${r} on Google Maps`}
+                >
                   <span>🍽️</span> {r}
-                  <span className="nearby-arrow">›</span>
+                  <span className="nearby-arrow">↗</span>
                 </div>
               ))}
 
               {/* Nearby Attractions */}
               <h4 className="nearby-title">🌟 Nearby Attractions</h4>
               {(dest.nearby?.attractions || []).map(a => (
-                <div key={a} className="nearby-chip">
+                <div
+                  key={a}
+                  className="nearby-chip nearby-chip--clickable"
+                  onClick={() => window.open(`https://www.google.com/maps/search/${encodeURIComponent(a + ' ' + dest.name + ' Sri Lanka')}`, '_blank')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={e => e.key === 'Enter' && window.open(`https://www.google.com/maps/search/${encodeURIComponent(a + ' ' + dest.name + ' Sri Lanka')}`, '_blank')}
+                  id={`attraction-${a.replace(/\s+/g, '-').toLowerCase()}`}
+                  title={`View ${a} on Google Maps`}
+                >
                   <span>📍</span> {a}
-                  <span className="nearby-arrow">›</span>
+                  <span className="nearby-arrow">↗</span>
                 </div>
               ))}
 

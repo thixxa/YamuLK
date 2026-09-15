@@ -225,7 +225,7 @@ export default function Weather() {
               <button className="btn btn-primary" onClick={() => navigate('/planner')} id="btn-plan-from-weather">
                 📅 Plan Trip
               </button>
-              <button className="btn btn-outline" onClick={() => navigate('/route')} id="btn-route-from-weather">
+              <button className="btn btn-outline" onClick={() => navigate('/route', { state: { destination: dest } })} id="btn-route-from-weather">
                 🗺️ Get Directions
               </button>
             </div>

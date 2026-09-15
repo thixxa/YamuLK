@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import MapView from '../components/MapView';
-import { transportModes } from '../data/mockData';
+import { transportModes, destinations as mockDestinations } from '../data/mockData';
 import { searchDestinations } from '../api/destinations.js';
 import './TripPlanner.css';
 
@@ -233,28 +233,42 @@ export default function TripPlanner() {
                 </div>
               ) : (
                 <div className="planner-preview-map-wrap">
-                  {(selectedDest.latitude || selectedDest.lat) && (selectedDest.longitude || selectedDest.lng) ? (
-                    <MapView
-                      key={selectedDest._id || selectedDest.id || selectedDest.name}
-                      center={[selectedDest.latitude ?? selectedDest.lat, selectedDest.longitude ?? selectedDest.lng]}
-                      zoom={11}
-                      height="220px"
-                      markers={[{
-                        lat: selectedDest.latitude ?? selectedDest.lat,
-                        lng: selectedDest.longitude ?? selectedDest.lng,
-                        label: selectedDest.name,
-                        emoji: selectedDest.emoji || '📍',
-                        sub: selectedDest.province,
-                        type: 'pin',
-                      }]}
-                      interactive={true}
-                    />
-                  ) : (
-                    <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', flexDirection: 'column', gap: 8 }}>
-                      <span style={{ fontSize: 36 }}>🗺️</span>
-                      <p className="text-muted text-sm">No coordinates available</p>
-                    </div>
-                  )}
+                  {(() => {
+                    // Resolve coordinates: API lat/lng → mockData fallback
+                    const apiLat = selectedDest.latitude;
+                    const apiLng = selectedDest.longitude;
+                    const hasApiCoords = apiLat != null && apiLng != null && apiLat !== 0 && apiLng !== 0;
+                    const mockMatch = !hasApiCoords && mockDestinations.find(
+                      d => d.name.toLowerCase() === selectedDest.name?.toLowerCase() ||
+                           d.id === selectedDest._id || d.id === selectedDest.id
+                    );
+                    const resolvedLat = hasApiCoords ? apiLat : (mockMatch?.lat ?? selectedDest.lat);
+                    const resolvedLng = hasApiCoords ? apiLng : (mockMatch?.lng ?? selectedDest.lng);
+                    const hasCoords = resolvedLat != null && resolvedLng != null && resolvedLat !== 0 && resolvedLng !== 0;
+
+                    return hasCoords ? (
+                      <MapView
+                        key={selectedDest._id || selectedDest.id || selectedDest.name}
+                        center={[resolvedLat, resolvedLng]}
+                        zoom={11}
+                        height="220px"
+                        markers={[{
+                          lat: resolvedLat,
+                          lng: resolvedLng,
+                          label: selectedDest.name,
+                          emoji: selectedDest.emoji || '📍',
+                          sub: selectedDest.province,
+                          type: 'pin',
+                        }]}
+                        interactive={true}
+                      />
+                    ) : (
+                      <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface)', flexDirection: 'column', gap: 8 }}>
+                        <span style={{ fontSize: 36 }}>🗺️</span>
+                        <p className="text-muted text-sm">No coordinates available</p>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 

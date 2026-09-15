@@ -203,6 +203,49 @@ export const destinations = [
   },
 ];
 
+// GPS coordinates for every nearby attraction (keyed by exact attraction name)
+export const nearbyAttractions = {
+  // ── Mirissa Beach attractions ──────────────────────────────────────────
+  "Whale Watching Point":       { lat: 5.9270, lng: 80.4500, emoji: "🐋", description: "The prime spot off Mirissa's southern coast for blue whale and sperm whale sightings, best between November and April." },
+  "Coconut Tree Hill":          { lat: 5.9466, lng: 80.4594, emoji: "🌴", description: "An iconic hilltop lined with leaning coconut palms — the most photographed sunset spot in Mirissa." },
+  "Parrot Rock":                { lat: 5.9398, lng: 80.4672, emoji: "🦜", description: "A rocky outcrop you can wade to at low tide, offering 360° ocean views and great snorkelling." },
+
+  // ── Diyaluma Falls attractions ──────────────────────────────────────────
+  "Natural Pools":              { lat: 6.7185, lng: 81.0030, emoji: "🌊", description: "Terraced natural rock pools at the top of Diyaluma Falls — perfect for a refreshing swim with a waterfall view." },
+  "Jungle Trail":               { lat: 6.7230, lng: 81.0120, emoji: "🌿", description: "A guided jungle trek through thick rainforest surrounding Diyaluma, rich in rare birds and orchids." },
+  "Tea Plantations":            { lat: 6.7050, lng: 80.9870, emoji: "🍵", description: "Rolling Uva Province tea estates just minutes from the falls — visit a factory and taste freshly brewed Ceylon tea." },
+
+  // ── Ella Rock attractions ──────────────────────────────────────────────
+  "Nine Arch Bridge":           { lat: 6.8757, lng: 81.0591, emoji: "🚂", description: "A majestic colonial-era railway viaduct in the jungle. Catch a blue train rumbling across for the perfect photo." },
+  "Little Adam's Peak":         { lat: 6.8637, lng: 81.0468, emoji: "⛰️", description: "An accessible half-day hike just outside Ella town with sweeping 180° valley views and tea estate panoramas." },
+  "Ravana Falls":               { lat: 6.8510, lng: 81.0440, emoji: "💦", description: "A dramatic 25-metre waterfall linked to the Ramayana legend, a short drive below Ella town." },
+
+  // ── Sigiriya Rock Fortress attractions ────────────────────────────────
+  "Pidurangala Rock":           { lat: 7.9683, lng: 80.7584, emoji: "🪨", description: "The alternative summit directly north of Sigiriya offering the best full-frame view of Lion Rock — and far fewer crowds." },
+  "Dambulla Cave Temple":       { lat: 7.8566, lng: 80.6492, emoji: "🕌", description: "A UNESCO World Heritage cave complex with 153 Buddha statues and vibrant ancient murals covering 2,100 sq metres." },
+  "Minneriya National Park":    { lat: 8.0292, lng: 80.8992, emoji: "🐘", description: "Home to the famous 'Gathering' — hundreds of wild elephants congregating around the reservoir between July and October." },
+
+  // ── Anuradhapura attractions ──────────────────────────────────────────
+  "Sacred Bo Tree":             { lat: 8.3457, lng: 80.3975, emoji: "🌳", description: "A sapling of the original Bodhi Tree under which the Buddha attained enlightenment — planted in 288 BC, the oldest documented tree in the world." },
+  "Ruwanwelisaya Stupa":        { lat: 8.3502, lng: 80.3969, emoji: "🕌", description: "One of the tallest ancient stupas in the world, built by King Dutugemunu in 140 BC and considered a supreme architectural wonder." },
+  "Abhayagiriya Stupa":         { lat: 8.3576, lng: 80.3965, emoji: "🏛️", description: "A massive 115-metre stupa once housing 5,000 monks, surrounded by atmospheric forest ruins and statues." },
+
+  // ── Polonnaruwa attractions ───────────────────────────────────────────
+  "Gal Vihara Rock Temple":     { lat: 7.9519, lng: 81.0014, emoji: "🗿", description: "Four magnificent Buddha figures carved directly into a single granite face — the finest example of ancient rock-cut art in Sri Lanka." },
+  "Parakrama Samudra":          { lat: 7.9350, lng: 81.0055, emoji: "💧", description: "A vast ancient reservoir built by King Parakramabahu I, still supplying agricultural water today — a stunning engineering feat." },
+  "Royal Palace":               { lat: 7.9482, lng: 81.0008, emoji: "🏰", description: "Ruins of the 12th-century royal palace complex with a seven-storey throne room that once housed 1,000 people." },
+
+  // ── Nilaveli Beach attractions ────────────────────────────────────────
+  "Pigeon Island":              { lat: 8.7003, lng: 81.2073, emoji: "🏝️", description: "Sri Lanka's only protected coral reef island — a 15-minute boat ride with outstanding snorkelling among blacktip reef sharks and turtles." },
+  "Fort Frederick":             { lat: 8.5857, lng: 81.2263, emoji: "🏰", description: "A 17th-century Portuguese fortress later occupied by the Dutch and British, home to friendly deer and sea-facing cannons." },
+  "Koneswaram Temple":          { lat: 8.5765, lng: 81.2335, emoji: "🙏", description: "An ancient Hindu temple perched on Swami Rock, a dramatic sea cliff 130m above the Indian Ocean with stunning panoramic views." },
+
+  // ── Adam's Peak attractions ───────────────────────────────────────────
+  "Sacred Footprint":           { lat: 6.8096, lng: 80.4994, emoji: "🙏", description: "The legendary 1.8m footprint at the summit revered by four religions — Buddhist, Hindu, Christian, and Muslim pilgrims all climb to see it." },
+  "Sunrise Viewpoint":          { lat: 6.8098, lng: 80.4998, emoji: "🌅", description: "The famous 'Shadow of the Peak' phenomenon just after sunrise — Adam's Peak casts a perfect triangular shadow on the clouds below." },
+  "Waterfalls along trail":     { lat: 6.8240, lng: 80.5050, emoji: "💦", description: "Several beautiful cascades along the Dalhousie trail, offering refreshing rest stops on the pre-dawn pilgrimage climb." },
+};
+
 export const categories = [
   { id: "all", label: "All", emoji: "🗺️" },
   { id: "beach", label: "Beaches", emoji: "🏖️" },

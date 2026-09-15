@@ -174,7 +174,7 @@ export default function RoutePlanner() {
               Colombo Fort → {routeEnd}
             </p>
           </div>
-          <button className="btn btn-outline" onClick={() => navigate('/weather')} id="btn-check-weather-route">
+          <button className="btn btn-outline" onClick={() => navigate('/weather', { state: { destinationId: passedDest?._id || passedDest?.id } })} id="btn-check-weather-route">
             🌤️ Check Weather
           </button>
         </div>
