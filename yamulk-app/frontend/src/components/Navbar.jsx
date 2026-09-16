@@ -4,24 +4,25 @@ import logo from '../assets/YamuLK_logo.png';
 import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useSettings } from '../context/SettingsContext.jsx';
 
 export default function Navbar() {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
+  const { t } = useSettings();
 
   // Get initials from name, e.g. "Kasun Perera" → "KP"
   const initials = user?.name
     ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : '?';
 
-
   const navLinks = [
-    { path: '/home', label: 'Home' },
-    { path: '/explore', label: 'Explore' },
-    { path: '/saved', label: 'Saved Trips' },
-    { path: '/planner', label: 'Trip Planner' },
+    { path: '/home', label: t('navHome') },
+    { path: '/explore', label: t('navExplore') },
+    { path: '/saved', label: t('navSavedTrips') },
+    { path: '/planner', label: t('navTripPlanner') },
   ];
 
   return (
@@ -57,7 +58,7 @@ export default function Navbar() {
           <button
             className="theme-toggle"
             onClick={toggleTheme}
-            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            title={theme === 'dark' ? t('switchToLight') : t('switchToDark')}
             aria-label="Toggle theme"
           >
             <div className="theme-toggle-track">

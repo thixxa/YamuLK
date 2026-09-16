@@ -5,6 +5,7 @@ import DestinationCard from '../components/DestinationCard';
 import MapView from '../components/MapView';
 import { categories } from '../data/mockData';
 import { searchDestinations } from '../api/destinations.js';
+import { useSettings } from '../context/SettingsContext.jsx';
 
 export default function Explore() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function Explore() {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('rating');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'map'
+  const { t } = useSettings();
 
   useEffect(() => {
     async function loadDestinations() {
@@ -76,8 +78,8 @@ export default function Explore() {
       <div className="page-content">
         <div className="section-header" style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
           <div>
-            <h1 className="section-title">🌍 Explore Destinations</h1>
-            <p className="text-muted text-sm mt-1">Discover {destinations.length} amazing places across Sri Lanka</p>
+            <h1 className="section-title">{t('exploreTitle')}</h1>
+            <p className="text-muted text-sm mt-1">{t('exploreSub')}</p>
           </div>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
             <div className="field-group" style={{ marginBottom: 0 }}>
@@ -95,10 +97,10 @@ export default function Explore() {
                 onChange={e => setSortBy(e.target.value)}
                 style={{ width: 180, cursor: 'pointer' }}
               >
-                <option value="rating">⭐ Top Rated</option>
-                <option value="cost-low">💰 Price: Low to High</option>
-                <option value="cost-high">💰 Price: High to Low</option>
-                <option value="name">🔤 A-Z</option>
+                <option value="rating">{t('topRated')}</option>
+                <option value="cost-low">{t('priceLowHigh')}</option>
+                <option value="cost-high">{t('priceHighLow')}</option>
+                <option value="name">{t('az')}</option>
               </select>
             </div>
             {/* View toggle */}
@@ -109,7 +111,7 @@ export default function Explore() {
                 id="btn-grid-view"
                 title="Grid View"
               >
-                ☰ Grid
+                {t('gridView')}
               </button>
               <button
                 className={`explore-toggle-btn ${viewMode === 'map' ? 'active' : ''}`}
@@ -117,7 +119,7 @@ export default function Explore() {
                 id="btn-map-view"
                 title="Map View"
               >
-                🗺️ Map
+                {t('mapView')}
               </button>
             </div>
           </div>
@@ -142,7 +144,7 @@ export default function Explore() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
           <div className="glow-line" style={{ flex: 1, margin: 0 }}></div>
           <span className="badge badge-primary">
-            Showing {filtered.length} Results
+            {t('showingResults').replace('Results', filtered.length + ' Results')}
           </span>
           <div className="glow-line" style={{ flex: 1, margin: 0 }}></div>
         </div>
@@ -161,10 +163,10 @@ export default function Explore() {
             ) : (
               <div className="explore-map-empty">
                 <div style={{ fontSize: 48, marginBottom: 12 }}>🗺️</div>
-                <p className="text-muted">No destinations with map coordinates available.</p>
+                <p className="text-muted">{t('noMapCoords')}</p>
               </div>
             )}
-            <p className="explore-map-hint">Click on a pin to view destination details</p>
+            <p className="explore-map-hint">{t('clickPin')}</p>
           </div>
         ) : (
           /* Grid */
@@ -179,8 +181,8 @@ export default function Explore() {
           ) : (
             <div className="card card-lg" style={{ textAlign: 'center', padding: '80px 20px' }}>
               <div style={{ fontSize: 60, marginBottom: 16, filter: 'drop-shadow(0 0 16px rgba(0,212,255,0.3))' }}>🔍</div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 800, marginBottom: 8 }}>No matches found</h3>
-              <p className="text-muted">Try adjusting your search or category filters.</p>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 800, marginBottom: 8 }}>{t('noMatches')}</h3>
+              <p className="text-muted">{t('tryAdjusting')}</p>
             </div>
           )
         )}

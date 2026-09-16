@@ -4,25 +4,28 @@ import Navbar from '../components/Navbar';
 import MapView from '../components/MapView';
 import { transportModes, destinations as mockDestinations } from '../data/mockData';
 import { searchDestinations } from '../api/destinations.js';
+import { useSettings } from '../context/SettingsContext.jsx';
 import './TripPlanner.css';
 
 export default function TripPlanner() {
   const navigate = useNavigate();
   const location = useLocation();
   const prefill = location.state?.destination;
+  const existingTrip = location.state?.trip;
+  const { t } = useSettings();
 
   const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [form, setForm] = useState({
-    destination: prefill?._id || prefill?.id || '',
-    date: '',
-    endDate: '',
-    people: 2,
-    budget: 15000,
-    transport: 'bus',
-    accommodation: 'hotel',
-    notes: '',
+    destination: existingTrip?.destination || existingTrip?.destinationData?._id || prefill?._id || prefill?.id || '',
+    date: existingTrip?.date || '',
+    endDate: existingTrip?.endDate || '',
+    people: existingTrip?.people ?? 2,
+    budget: existingTrip?.budget ?? 15000,
+    transport: existingTrip?.transport || 'bus',
+    accommodation: existingTrip?.accommodation || 'hotel',
+    notes: existingTrip?.notes || '',
   });
   const [previewTab, setPreviewTab] = useState('photo'); // 'photo' | 'map'
 
@@ -66,8 +69,8 @@ export default function TripPlanner() {
       <div className="page-content">
         <div className="section-header">
           <div>
-            <h1 className="section-title">🗺️ Trip Planner</h1>
-            <p className="text-muted text-sm mt-1">Plan your perfect Sri Lanka adventure</p>
+            <h1 className="section-title">🗺️ {t('navTripPlanner')}</h1>
+            <p className="text-muted text-sm mt-1">{t('startPlanningFirst')}</p>
           </div>
         </div>
 
@@ -77,7 +80,7 @@ export default function TripPlanner() {
             <form onSubmit={handleSubmit} id="trip-planner-form">
               {/* Destination selector */}
               <div className="field-group">
-                <label>📍 Destination</label>
+                <label>{t('destinationLabel')}</label>
                 <select
                   id="planner-destination"
                   value={form.destination}
@@ -92,7 +95,7 @@ export default function TripPlanner() {
               {/* Dates */}
               <div className="grid-2">
                 <div className="field-group">
-                  <label>📅 Travel Date</label>
+                  <label>{t('travelDateLabel')}</label>
                   <input
                     type="date"
                     id="planner-start-date"
@@ -102,7 +105,7 @@ export default function TripPlanner() {
                   />
                 </div>
                 <div className="field-group">
-                  <label>📅 Return Date</label>
+                  <label>{t('returnDateLabel')}</label>
                   <input
                     type="date"
                     id="planner-end-date"
@@ -118,7 +121,7 @@ export default function TripPlanner() {
               {/* People & Budget */}
               <div className="grid-2">
                 <div className="field-group">
-                  <label>👥 Number of People</label>
+                  <label>{t('numPeopleLabel')}</label>
                   <input
                     type="number"
                     id="planner-people"
@@ -129,7 +132,7 @@ export default function TripPlanner() {
                   />
                 </div>
                 <div className="field-group">
-                  <label>💰 Total Budget (Rs.)</label>
+                  <label>{t('totalBudgetLabel')}</label>
                   <input
                     type="number"
                     id="planner-budget"
@@ -143,7 +146,7 @@ export default function TripPlanner() {
 
               {/* Transport */}
               <div className="field-group">
-                <label>🚌 Transport Method</label>
+                <label>{t('transportMethodLabel')}</label>
                 <div className="transport-grid" id="transport-grid">
                   {transportModes.map(m => (
                     <div
@@ -153,8 +156,8 @@ export default function TripPlanner() {
                       id={`transport-${m.id}`}
                     >
                       <span className="transport-emoji">{m.emoji}</span>
-                      <span className="transport-label">{m.label}</span>
-                      <span className="transport-desc">{m.desc}</span>
+                      <span className="transport-label">{t(`${m.id}Label`) || m.label}</span>
+                      <span className="transport-desc">{t(`${m.id}Desc`) || m.desc}</span>
                     </div>
                   ))}
                 </div>
@@ -162,26 +165,26 @@ export default function TripPlanner() {
 
               {/* Accommodation */}
               <div className="field-group">
-                <label>🏨 Accommodation Type</label>
+                <label>{t('accommodationTypeLabel')}</label>
                 <select
                   id="planner-accommodation"
                   value={form.accommodation}
                   onChange={e => setForm({ ...form, accommodation: e.target.value })}
                 >
-                  <option value="hotel">Hotel (Rs. 5,000 – 15,000/night)</option>
-                  <option value="guesthouse">Guest House (Rs. 2,000 – 5,000/night)</option>
-                  <option value="homestay">Homestay (Rs. 1,500 – 3,000/night)</option>
-                  <option value="hostel">Hostel (Rs. 800 – 2,000/night)</option>
-                  <option value="resort">Resort (Rs. 15,000+/night)</option>
+                  <option value="hotel">{t('hotel')}</option>
+                  <option value="guesthouse">{t('guesthouse')}</option>
+                  <option value="homestay">{t('homestay')}</option>
+                  <option value="hostel">{t('hostel')}</option>
+                  <option value="resort">{t('resort')}</option>
                 </select>
               </div>
 
               {/* Notes */}
               <div className="field-group">
-                <label>📝 Special Notes</label>
+                <label>{t('specialNotesLabel')}</label>
                 <textarea
                   id="planner-notes"
-                  placeholder="Any special requirements, dietary needs, accessibility needs..."
+                  placeholder={t('specialNotesPlaceholder')}
                   rows="3"
                   value={form.notes}
                   onChange={e => setForm({ ...form, notes: e.target.value })}
@@ -190,7 +193,7 @@ export default function TripPlanner() {
               </div>
 
               <button type="submit" className="btn btn-primary btn-block btn-lg" id="btn-generate-plan">
-                ✨ Generate Plan
+                {t('generatePlanBtn')}
               </button>
             </form>
           </div>
@@ -205,14 +208,14 @@ export default function TripPlanner() {
                   onClick={() => setPreviewTab('photo')}
                   id="planner-tab-photo"
                 >
-                  📸 Photos
+                  {t('photosTab')}
                 </button>
                 <button
                   className={`planner-preview-tab ${previewTab === 'map' ? 'active' : ''}`}
                   onClick={() => setPreviewTab('map')}
                   id="planner-tab-map"
                 >
-                  🗺️ Location
+                  {t('locationTab')}
                 </button>
               </div>
 
@@ -279,15 +282,15 @@ export default function TripPlanner() {
                 <div className="preview-stats">
                   <div className="preview-stat">
                     <span className="preview-stat-val">⭐ {selectedDest.averageRating ?? selectedDest.rating ?? 0}</span>
-                    <span className="preview-stat-lbl">Rating</span>
+                    <span className="preview-stat-lbl">{t('rating')}</span>
                   </div>
                   <div className="preview-stat">
                     <span className="preview-stat-val">Rs. {(selectedDest.estimatedCost ?? selectedDest.costPerDay ?? 0).toLocaleString()}</span>
-                    <span className="preview-stat-lbl">per day</span>
+                    <span className="preview-stat-lbl">{t('perDay').replace('/', '')}</span>
                   </div>
                   <div className="preview-stat">
                     <span className="preview-stat-val">{selectedDest.weather?.emoji || '☀️'} {selectedDest.weather?.temp || '28'}°C</span>
-                    <span className="preview-stat-lbl">Weather</span>
+                    <span className="preview-stat-lbl">{t('weather')}</span>
                   </div>
                 </div>
 
@@ -301,7 +304,7 @@ export default function TripPlanner() {
 
                 <div className="preview-best-time">
                   <span>🗓️</span>
-                  <span><strong>Best time to visit:</strong> {selectedDest.bestTime || 'Year-round'}</span>
+                  <span><strong>{t('bestTimeToVisit')}:</strong> {selectedDest.bestTime || 'Year-round'}</span>
                 </div>
               </div>
             </div>

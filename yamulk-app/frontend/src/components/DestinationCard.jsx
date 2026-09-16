@@ -1,8 +1,10 @@
 import './DestinationCard.css';
 import { useNavigate } from 'react-router-dom';
+import { useSettings } from '../context/SettingsContext.jsx';
 
 export default function DestinationCard({ destination, variant = 'default' }) {
   const navigate = useNavigate();
+  const { t } = useSettings();
   const firstImage = destination.imageURLs?.[0];
 
   return (
@@ -32,7 +34,7 @@ export default function DestinationCard({ destination, variant = 'default' }) {
         </div>
         <div className="dest-footer">
           <span className="dest-cost">
-            Rs. {(destination.estimatedCost ?? destination.costPerDay)?.toLocaleString()}/day
+            Rs. {(destination.estimatedCost ?? destination.costPerDay)?.toLocaleString()}{t('perDay')}
           </span>
           {destination.weather && (
             <span className="dest-weather">{destination.weather.emoji} {destination.weather.temp}°C</span>

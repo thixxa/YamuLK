@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { getSavedItems, removeSavedItem } from '../api/savedItems.js';
+import { useSettings } from '../context/SettingsContext.jsx';
 import './SavedTrips.css';
 
 export default function SavedTrips() {
@@ -11,6 +12,7 @@ export default function SavedTrips() {
   const [trips, setTrips] = useState([]);
   const [favourites, setFavourites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useSettings();
 
   useEffect(() => {
     fetchSavedItems();
@@ -21,9 +23,9 @@ export default function SavedTrips() {
     try {
       const { savedItems } = await getSavedItems();
       // split into itineraries (trips) and favourites (destinations)
-      const t = savedItems.filter(item => item.itemType === 'trip');
+      const tTrips = savedItems.filter(item => item.itemType === 'trip');
       const f = savedItems.filter(item => item.itemType === 'destination');
-      setTrips(t);
+      setTrips(tTrips);
       setFavourites(f);
     } catch (err) {
       console.error("Error fetching saved items:", err);
@@ -65,11 +67,11 @@ export default function SavedTrips() {
       <div className="page-content">
         <div className="section-header">
           <div>
-            <h1 className="section-title">🧳 Saved Trips</h1>
-            <p className="text-muted text-sm mt-1">{trips.length} itineraries · {favourites.length} favourites</p>
+            <h1 className="section-title">{t('savedTripsTitle')}</h1>
+            <p className="text-muted text-sm mt-1">{trips.length} {t('savedItineraries').replace('📋 ', '').toLowerCase()} · {favourites.length} {t('favTab').replace('❤️ ', '').toLowerCase()}</p>
           </div>
           <button className="btn btn-primary" onClick={() => navigate('/planner')} id="btn-new-trip">
-            + New Trip
+            {t('newTrip')}
           </button>
         </div>
 
@@ -80,14 +82,14 @@ export default function SavedTrips() {
             onClick={() => setActiveTab('itineraries')}
             id="tab-itineraries"
           >
-            📋 Saved Itineraries
+            {t('savedItineraries')}
           </div>
           <div
             className={`tab-item ${activeTab === 'favourites' ? 'active' : ''}`}
             onClick={() => setActiveTab('favourites')}
             id="tab-favourites"
           >
-            ❤️ Favourites
+            {t('favTab')}
           </div>
         </div>
 
@@ -106,7 +108,7 @@ export default function SavedTrips() {
                     <div className="saved-card-info">
                       <div className="saved-card-name">{dest?.name || 'Unknown Trip'}</div>
                       <div className="saved-card-meta">
-                        <span>👥 {trip.people || 1} people</span>
+                        <span>👥 {trip.people || 1} {t('people')}</span>
                       </div>
                       <div className="saved-card-budget">
                         💰 Rs. {(trip.totalBudget || 0).toLocaleString()}
@@ -123,7 +125,7 @@ export default function SavedTrips() {
                         onClick={() => navigate('/planner')}
                         id={`btn-edit-trip-${savedObj._id}`}
                       >
-                        Edit
+                        {t('edit')}
                       </button>
                       <button
                         className="btn btn-sm btn-danger"
@@ -140,10 +142,10 @@ export default function SavedTrips() {
           ) : (
             <div className="saved-empty">
               <div className="saved-empty-icon">📋</div>
-              <h3>No saved itineraries yet</h3>
-              <p>Start planning your first Sri Lanka adventure!</p>
+              <h3>{t('noSavedItineraries')}</h3>
+              <p>{t('startPlanningFirst')}</p>
               <button className="btn btn-primary mt-4" onClick={() => navigate('/planner')}>
-                Plan a Trip
+                {t('planATrip')}
               </button>
             </div>
           )
@@ -175,10 +177,10 @@ export default function SavedTrips() {
           ) : (
             <div className="saved-empty">
               <div className="saved-empty-icon">❤️</div>
-              <h3>No favourite destinations yet</h3>
-              <p>Explore destinations and tap the heart to save your favourites!</p>
+              <h3>{t('noFavsYet')}</h3>
+              <p>{t('exploreAndHeart')}</p>
               <button className="btn btn-primary mt-4" onClick={() => navigate('/explore')}>
-                Explore Destinations
+                {t('exploreDestinations')}
               </button>
             </div>
           )

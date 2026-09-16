@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import { createTrip } from '../api/trips.js';
 import { updateBudget } from '../api/budget.js';
 import { saveItem } from '../api/savedItems.js';
+import { getAreaCategoryRates } from '../utils/areaCosts.js';
 import './Budget.css';
 
 const DEFAULT_ITEMS = [
@@ -45,56 +46,46 @@ export default function Budget() {
     return 1;
   })();
 
+  // Compute area-specific benchmark rates
+  const areaRates = getAreaCategoryRates(
+    tripData?.destinationData,
+    tripData?.accommodation || 'hotel',
+    tripData?.transport || 'bus'
+  );
+
   const getInitialItems = () => {
     const initial = JSON.parse(JSON.stringify(DEFAULT_ITEMS));
     if (!tripData) return initial;
     
-    const accRate = {
-      hotel: 8000,
-      guesthouse: 3500,
-      homestay: 2000,
-      hostel: 1200,
-      resort: 20000
-    }[tripData.accommodation] || 6000;
-    
-    const transRate = {
-      bus: 800,
-      train: 600,
-      car: 4000,
-      motorcycle: 1500,
-      bicycle: 300,
-      walk: 0,
-      other: 1500
-    }[tripData.transport] || 1500;
-    
     const people = tripData.people || 2;
     const rooms = Math.ceil(people / 2);
+    const isPrivateVehicle = ['car', 'motorcycle'].includes(tripData.transport);
 
     return initial.map(item => {
       let amount = item.amount;
       switch (item.id) {
         case 'accommodation':
-          amount = accRate * tripDays * rooms;
+          amount = areaRates.accRate * tripDays * rooms;
           break;
         case 'transport':
-          amount = ['car', 'motorcycle'].includes(tripData.transport) 
-            ? transRate * tripDays 
-            : transRate * tripDays * people;
+          amount = isPrivateVehicle 
+            ? areaRates.transRate * tripDays 
+            : areaRates.transRate * tripDays * people;
           break;
         case 'food':
-          amount = 2500 * tripDays * people;
+          amount = areaRates.foodPerDay * tripDays * people;
           break;
         case 'entrance':
-          amount = 1500 * people;
+          amount = areaRates.entrancePerPerson * people;
           break;
         case 'activities':
-          amount = 2000 * people;
+          amount = areaRates.activityPerPerson * people;
           break;
         case 'shopping':
-          amount = 1000 * people;
+          amount = areaRates.shoppingPerPerson * people;
           break;
         case 'emergency':
-          amount = 500 * tripDays * people;
+          amount = areaRates.emergencyPerDayPerson * tripDays * people;
           break;
       }
       return { ...item, amount };
@@ -180,10 +171,27 @@ export default function Budget() {
             <p className="text-muted text-sm mt-1">
               {tripData?.destinationData?.name || 'Your Trip'} · {tripData?.people || 2} people · {tripDays} day{tripDays !== 1 ? 's' : ''}
             </p>
+            {tripData?.destinationData && (
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                marginTop: '8px',
+                padding: '4px 10px',
+                borderRadius: '12px',
+                background: 'rgba(99, 102, 241, 0.12)',
+                border: '1px solid rgba(99, 102, 241, 0.3)',
+                color: '#a5b4fc',
+                fontSize: '0.8rem',
+                fontWeight: 500
+              }}>
+                <span>📍 Estimated using <strong>{tripData.destinationData.name}</strong> regional cost benchmarks ({areaRates.areaTierName})</span>
+              </div>
+            )}
           </div>
           <button
             className="btn btn-outline"
-            onClick={() => navigate('/planner')}
+            onClick={() => navigate('/planner', { state: { trip: tripData } })}
             id="btn-back-planner"
           >
             ← Edit Plan
@@ -307,7 +315,7 @@ export default function Budget() {
             <div className="budget-actions">
               <button
                 className="btn btn-primary"
-                onClick={() => navigate('/route')}
+                onClick={() => navigate('/route', { state: { trip: tripData, destination: tripData?.destinationData, budgetItems: items } })}
                 id="btn-view-route"
               >
                 🗺️ View Route

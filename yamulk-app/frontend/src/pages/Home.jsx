@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import DestinationCard from '../components/DestinationCard';
 import { categories } from '../data/mockData';
 import { searchDestinations } from '../api/destinations.js';
+import { useSettings } from '../context/SettingsContext.jsx';
 import './Home.css';
 
 const SUPABASE_URL = import.meta.env.VITE_API_URL
@@ -21,6 +22,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [slideIndex, setSlideIndex] = useState(0);
   const navigate = useNavigate();
+  const { t } = useSettings();
 
   useEffect(() => {
     async function loadDestinations() {
@@ -82,17 +84,17 @@ export default function Home() {
         <div className="home-hero-content">
           <div className="hero-badge">
             <span className="hero-badge-dot"></span>
-            Sri Lankan Travel Platform
+            {t('heroBadge')}
           </div>
-          <h1 className="hero-title">Where do you want to<br /><span className="grad-text">explore next?</span></h1>
-          <p className="hero-sub">Discover hidden beaches, mystic waterfalls, epic mountains &amp; ancient heritage — all in one place</p>
+          <h1 className="hero-title">{t('heroTitle1')}<br /><span className="grad-text">{t('heroTitle2')}</span></h1>
+          <p className="hero-sub">{t('heroSub')}</p>
 
           {/* Search */}
           <div className="search-bar" id="main-search">
             <span className="search-icon">🔍</span>
             <input
               type="text"
-              placeholder="Search destinations e.g. Ella, Mirissa, Sigiriya..."
+              placeholder={t('searchPlaceholder')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               id="search-input"
@@ -102,7 +104,7 @@ export default function Home() {
               onClick={() => {}}
               id="btn-search"
             >
-              Search
+              {t('searchBtn')}
             </button>
           </div>
 
@@ -118,7 +120,7 @@ export default function Home() {
       <div className="page-content">
         {/* Category Filters */}
         <div className="section-header">
-          <h2 className="section-title">Browse by Category</h2>
+          <h2 className="section-title">{t('browseCategory')}</h2>
         </div>
         <div className="category-grid" id="category-grid">
           {categories.map(cat => (
@@ -139,14 +141,14 @@ export default function Home() {
           <>
             <div className="section-header mt-8">
               <h2 className="section-title">
-                {filtered.length} Result{filtered.length !== 1 ? 's' : ''} Found
+                {filtered.length} {t('resultsFound')}
               </h2>
               {(search || activeCategory !== 'all') && (
                 <button
                   className="section-link"
                   onClick={() => { setSearch(''); setActiveCategory('all'); }}
                 >
-                  Clear filters
+                  {t('clearFilters')}
                 </button>
               )}
             </div>
@@ -157,9 +159,9 @@ export default function Home() {
             ) : (
               <div className="no-results">
                 <div className="no-results-icon">🔍</div>
-                <p>No destinations found for "<strong>{search}</strong>"</p>
+                <p>{t('noResultsFor')} "<strong>{search}</strong>"</p>
                 <button className="btn btn-outline mt-4" onClick={() => { setSearch(''); setActiveCategory('all'); }}>
-                  Browse All
+                  {t('browseAll')}
                 </button>
               </div>
             )}
@@ -168,8 +170,8 @@ export default function Home() {
           <>
             {/* Recommended */}
             <div className="section-header mt-8">
-              <h2 className="section-title">Recommended for You</h2>
-              <span className="section-link" onClick={() => navigate('/explore')}>See all</span>
+              <h2 className="section-title">{t('recommended')}</h2>
+              <span className="section-link" onClick={() => navigate('/explore')}>{t('seeAll')}</span>
             </div>
             <div className="grid-3" id="recommended-grid">
               {recommended.map(d => <DestinationCard key={d._id || d.id} destination={d} />)}
@@ -177,8 +179,8 @@ export default function Home() {
 
             {/* Historical Sites */}
             <div className="section-header mt-8">
-              <h2 className="section-title">🏛️ Popular Historical Sites</h2>
-              <span className="section-link" onClick={() => setActiveCategory('historical')}>View all</span>
+              <h2 className="section-title">{t('popularHistorical')}</h2>
+              <span className="section-link" onClick={() => setActiveCategory('historical')}>{t('viewAllCta')}</span>
             </div>
             <div className="grid-3" id="historical-grid">
               {historical.map(d => <DestinationCard key={d._id || d.id} destination={d} />)}
@@ -187,10 +189,10 @@ export default function Home() {
             {/* CTA Banner */}
             <div className="cta-banner mt-8">
               <div className="cta-content">
-                <h3>🗺️ Ready to start planning?</h3>
-                <p>Use our AI-powered trip planner to create your perfect Sri Lanka itinerary</p>
+                <h3>{t('readyToPlan')}</h3>
+                <p>{t('useAiPlanner')}</p>
                 <button className="cta-btn" onClick={() => navigate('/planner')} id="btn-start-planning">
-                  Start Planning →
+                  {t('startPlanning')}
                 </button>
               </div>
               <div className="cta-emojis">🏖️ 💧 ⛰️ 🏛️</div>

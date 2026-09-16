@@ -5,7 +5,13 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
+html {
+  font-size: 16px;
+  zoom: var(--font-scale, 1);
+}
+
 :root {
+  --font-scale: 1;
   /* === DARK PALETTE === */
   --bg-base:     #0f1117;
   --bg-deep:     #080a0e;

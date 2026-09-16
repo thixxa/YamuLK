@@ -3,10 +3,23 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import MapView from '../components/MapView';
 import { routes, transportModes, destinations as mockDestinations } from '../data/mockData';
+import { createTrip } from '../api/trips.js';
+import { updateBudget } from '../api/budget.js';
+import { saveItem } from '../api/savedItems.js';
 import './RoutePlanner.css';
 
 // ── Starting point: Colombo Fort ──────────────────────────────────────────
 const COLOMBO = { name: 'Colombo Fort', emoji: '🏙️', lat: 6.9344, lng: 79.8428, km: 0, type: 'start' };
+
+const TRANSPORT_MAP = {
+  bus: 'Bus',
+  train: 'Train',
+  car: 'Car',
+  motorcycle: 'Motorcycle',
+  bicycle: 'Bicycle',
+  walk: 'Walk',
+  other: 'Other',
+};
 
 /**
  * Resolve GPS coordinates for a destination.
@@ -71,9 +84,13 @@ export default function RoutePlanner() {
   const navigate  = useNavigate();
   const location  = useLocation();
   const passedDest = location.state?.destination;
+  const tripData = location.state?.trip;
+  const budgetItems = location.state?.budgetItems;
 
   const defaultRoute = routes[0];
-  const [selectedMode, setSelectedMode] = useState('bus');
+  const [selectedMode, setSelectedMode] = useState(tripData?.transport || 'bus');
+  const [saving, setSaving] = useState(false);
+  const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
 
   // ── OSRM state ────────────────────────────────────────────────────────
   const [roadCoords, setRoadCoords]   = useState([]);   // [[lat,lng], ...]
@@ -81,6 +98,53 @@ export default function RoutePlanner() {
   const [realDurMin, setRealDurMin]   = useState(null);
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError,   setRouteError]   = useState(false);
+
+  const handleSaveTrip = async () => {
+    if (!tripData) return;
+    setSaving(true);
+    setStatusMsg({ type: '', text: '' });
+    try {
+      const destId = tripData.destinationData?._id || tripData.destination;
+      const transportMode = TRANSPORT_MAP[tripData.transport?.toLowerCase()] || 'Other';
+
+      const tripPayload = {
+        destinationId: destId,
+        travelDate: tripData.date || new Date().toISOString(),
+        returnDate: tripData.endDate || new Date(Date.now() + 86400000).toISOString(),
+        people: tripData.people || 2,
+        transportMode,
+        accommodationType: tripData.accommodation || 'hotel',
+        totalBudget: tripData.budget || 15000,
+        specialNotes: tripData.notes || '',
+      };
+      
+      const tripRes = await createTrip(tripPayload);
+      const tripId = tripRes.trip._id;
+
+      if (budgetItems && Array.isArray(budgetItems)) {
+        const budgetPayload = {
+          transport: budgetItems.find(i => i.id === 'transport')?.amount || 0,
+          accommodation: budgetItems.find(i => i.id === 'accommodation')?.amount || 0,
+          food: budgetItems.find(i => i.id === 'food')?.amount || 0,
+          other: (budgetItems.find(i => i.id === 'entrance')?.amount || 0) +
+                 (budgetItems.find(i => i.id === 'activities')?.amount || 0) +
+                 (budgetItems.find(i => i.id === 'shopping')?.amount || 0) +
+                 (budgetItems.find(i => i.id === 'emergency')?.amount || 0),
+          userBudget: tripData.budget || 15000
+        };
+        await updateBudget(tripId, budgetPayload);
+      }
+
+      await saveItem('trip', tripId);
+      setStatusMsg({ type: 'success', text: '✅ Trip saved successfully!' });
+      setTimeout(() => navigate('/saved'), 1500);
+    } catch (error) {
+      console.error("Error saving trip from route planner:", error);
+      setStatusMsg({ type: 'error', text: '❌ Failed to save trip: ' + error.message });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Resolved destination coordinates
   const destCoords = passedDest ? resolveCoords(passedDest) : null;
@@ -174,10 +238,45 @@ export default function RoutePlanner() {
               Colombo Fort → {routeEnd}
             </p>
           </div>
-          <button className="btn btn-outline" onClick={() => navigate('/weather', { state: { destinationId: passedDest?._id || passedDest?.id } })} id="btn-check-weather-route">
-            🌤️ Check Weather
-          </button>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {tripData && (
+              <button 
+                className="btn btn-outline" 
+                onClick={() => navigate('/budget', { state: { trip: tripData } })} 
+                id="btn-back-budget"
+              >
+                💰 Budget Calculator
+              </button>
+            )}
+            <button 
+              className="btn btn-outline" 
+              onClick={() => navigate('/planner', { state: { trip: tripData } })} 
+              id="btn-edit-planner"
+            >
+              ✏️ Edit Plan
+            </button>
+            <button className="btn btn-outline" onClick={() => navigate('/weather', { state: { destinationId: passedDest?._id || passedDest?.id } })} id="btn-check-weather-route">
+              🌤️ Check Weather
+            </button>
+          </div>
         </div>
+
+        {/* Status message */}
+        {statusMsg.text && (
+          <div
+            style={{
+              padding: '12px 16px',
+              borderRadius: 8,
+              marginBottom: 16,
+              background: statusMsg.type === 'success' ? 'rgba(76, 175, 80, 0.15)' : 'rgba(244, 67, 54, 0.15)',
+              border: `1px solid ${statusMsg.type === 'success' ? '#4CAF50' : '#f44336'}`,
+              color: statusMsg.type === 'success' ? '#4CAF50' : '#f44336',
+              fontWeight: 600,
+            }}
+          >
+            {statusMsg.text}
+          </div>
+        )}
 
         <div className="route-layout">
           {/* ── Map area ─────────────────────────────────────────────── */}
@@ -294,6 +393,17 @@ export default function RoutePlanner() {
 
             {/* Actions */}
             <div className="route-action-card">
+              {tripData && (
+                <button
+                  className="btn btn-primary btn-block mb-3"
+                  id="btn-save-route-plan"
+                  onClick={handleSaveTrip}
+                  disabled={saving}
+                  style={{ background: 'linear-[#10b981, #059669]' }}
+                >
+                  {saving ? '⏳ Saving Plan...' : '💾 Save Plan'}
+                </button>
+              )}
               <button
                 className="btn btn-primary btn-block"
                 id="btn-start-navigation"
@@ -310,7 +420,7 @@ export default function RoutePlanner() {
               </button>
               <button
                 className="btn btn-ghost btn-block mt-3"
-                onClick={() => navigate('/weather')}
+                onClick={() => navigate('/weather', { state: { destinationId: passedDest?._id || passedDest?.id } })}
                 id="btn-weather-route"
               >
                 🌦️ Weather Along Route
