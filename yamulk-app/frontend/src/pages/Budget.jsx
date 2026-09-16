@@ -45,7 +45,63 @@ export default function Budget() {
     return 1;
   })();
 
-  const [items, setItems] = useState(DEFAULT_ITEMS);
+  const getInitialItems = () => {
+    const initial = JSON.parse(JSON.stringify(DEFAULT_ITEMS));
+    if (!tripData) return initial;
+    
+    const accRate = {
+      hotel: 8000,
+      guesthouse: 3500,
+      homestay: 2000,
+      hostel: 1200,
+      resort: 20000
+    }[tripData.accommodation] || 6000;
+    
+    const transRate = {
+      bus: 800,
+      train: 600,
+      car: 4000,
+      motorcycle: 1500,
+      bicycle: 300,
+      walk: 0,
+      other: 1500
+    }[tripData.transport] || 1500;
+    
+    const people = tripData.people || 2;
+    const rooms = Math.ceil(people / 2);
+
+    return initial.map(item => {
+      let amount = item.amount;
+      switch (item.id) {
+        case 'accommodation':
+          amount = accRate * tripDays * rooms;
+          break;
+        case 'transport':
+          amount = ['car', 'motorcycle'].includes(tripData.transport) 
+            ? transRate * tripDays 
+            : transRate * tripDays * people;
+          break;
+        case 'food':
+          amount = 2500 * tripDays * people;
+          break;
+        case 'entrance':
+          amount = 1500 * people;
+          break;
+        case 'activities':
+          amount = 2000 * people;
+          break;
+        case 'shopping':
+          amount = 1000 * people;
+          break;
+        case 'emergency':
+          amount = 500 * tripDays * people;
+          break;
+      }
+      return { ...item, amount };
+    });
+  };
+
+  const [items, setItems] = useState(getInitialItems);
   const [saving, setSaving] = useState(false);
   const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
 
@@ -259,7 +315,7 @@ export default function Budget() {
               <button className="btn btn-outline" id="btn-save-budget" onClick={saveTrip} disabled={saving}>
                 {saving ? '⏳ Saving...' : '💾 Save Plan'}
               </button>
-              <button className="btn btn-ghost" id="btn-reset-budget" onClick={() => setItems(DEFAULT_ITEMS)}>
+              <button className="btn btn-ghost" id="btn-reset-budget" onClick={() => setItems(getInitialItems())}>
                 🔄 Reset
               </button>
             </div>

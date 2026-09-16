@@ -49,7 +49,7 @@ const budgetSchema = new mongoose.Schema(
   }
 );
 
-budgetSchema.pre("validate", function (next) {
+budgetSchema.pre("validate", function () {
   this.totalCost =
     this.transport +
     this.accommodation +
@@ -63,8 +63,6 @@ budgetSchema.pre("validate", function (next) {
   } else {
     this.status = "under-budget";
   }
-
-  next();
 });
 
 const Budget = mongoose.model("Budget", budgetSchema);
