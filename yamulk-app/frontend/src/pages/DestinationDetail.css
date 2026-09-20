@@ -115,6 +115,23 @@
 .review-stars { margin-left: auto; font-size: 13px; }
 .review-text { font-size: 14px; color: var(--text-sub); line-height: 1.6; }
 
+.review-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0.35;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: opacity 0.2s, background 0.2s;
+  margin-left: var(--space-2);
+  flex-shrink: 0;
+}
+.review-delete-btn:hover {
+  opacity: 1;
+  background: rgba(244, 67, 54, 0.12);
+}
+
 /* Info panel */
 .info-panel {
   background: var(--bg-surface);

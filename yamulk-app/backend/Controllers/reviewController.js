@@ -70,3 +70,39 @@ export async function getAllReviews(req, res) {
     return res.status(500).json({ message: "Failed getting reviews" });
   }
 }
+
+// DELETE /review/:reviewId  — only the author can delete
+export async function deleteReview(req, res) {
+  try {
+    const review = await Review.findOneAndDelete({
+      _id: req.params.reviewId,
+      userId: req.user._id,
+    });
+
+    if (!review) {
+      return res
+        .status(404)
+        .json({ message: "Review not found or not authorized" });
+    }
+
+    // Recalculate average rating for the destination
+    const stats = await Review.aggregate([
+      { $match: { destinationId: review.destinationId } },
+      { $group: { _id: "$destinationId", avgRating: { $avg: "$rating" } } },
+    ]);
+    const newAverage =
+      stats.length > 0 ? Math.round(stats[0].avgRating * 10) / 10 : 0;
+
+    await Destination.findByIdAndUpdate(review.destinationId, {
+      averageRating: newAverage,
+    });
+
+    return res.status(200).json({
+      message: "Review deleted successfully",
+      newAverageRating: newAverage,
+    });
+  } catch (error) {
+    console.error("deleteReview error:", error);
+    return res.status(500).json({ message: "Error deleting review" });
+  }
+}

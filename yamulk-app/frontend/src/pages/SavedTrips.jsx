@@ -122,7 +122,30 @@ export default function SavedTrips() {
                     <div className="saved-card-actions">
                       <button
                         className="btn btn-sm btn-primary"
-                        onClick={() => navigate('/planner')}
+                        onClick={() => {
+                          // Map saved trip back to TripPlanner form format
+                          const TRANSPORT_REVERSE = {
+                            'Bus': 'bus', 'Train': 'train', 'Car': 'car',
+                            'Motorcycle': 'motorcycle', 'Bicycle': 'bicycle',
+                            'Walk': 'walk', 'Other': 'other',
+                          };
+                          navigate('/planner', {
+                            state: {
+                              trip: {
+                                destination: dest?._id || '',
+                                destinationData: dest,
+                                date: trip.travelDate ? new Date(trip.travelDate).toISOString().slice(0, 10) : '',
+                                endDate: trip.returnDate ? new Date(trip.returnDate).toISOString().slice(0, 10) : '',
+                                people: trip.people || 2,
+                                budget: trip.totalBudget || 15000,
+                                transport: TRANSPORT_REVERSE[trip.transportMode] || 'bus',
+                                accommodation: trip.accommodationType || 'hotel',
+                                notes: trip.specialNotes || '',
+                                tripId: trip._id,  // so Budget knows to update, not create
+                              },
+                            },
+                          });
+                        }}
                         id={`btn-edit-trip-${savedObj._id}`}
                       >
                         {t('edit')}

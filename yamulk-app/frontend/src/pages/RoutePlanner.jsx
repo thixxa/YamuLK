@@ -91,6 +91,7 @@ export default function RoutePlanner() {
   const [selectedMode, setSelectedMode] = useState(tripData?.transport || 'bus');
   const [saving, setSaving] = useState(false);
   const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
+  const [routeShareCopied, setRouteShareCopied] = useState(false);
 
   // ── OSRM state ────────────────────────────────────────────────────────
   const [roadCoords, setRoadCoords]   = useState([]);   // [[lat,lng], ...]
@@ -104,42 +105,50 @@ export default function RoutePlanner() {
     setSaving(true);
     setStatusMsg({ type: '', text: '' });
     try {
-      const destId = tripData.destinationData?._id || tripData.destination;
-      const transportMode = TRANSPORT_MAP[tripData.transport?.toLowerCase()] || 'Other';
+      let tripId = location.state?.tripId; // passed from Budget if already saved
 
-      const tripPayload = {
-        destinationId: destId,
-        travelDate: tripData.date || new Date().toISOString(),
-        returnDate: tripData.endDate || new Date(Date.now() + 86400000).toISOString(),
-        people: tripData.people || 2,
-        transportMode,
-        accommodationType: tripData.accommodation || 'hotel',
-        totalBudget: tripData.budget || 15000,
-        specialNotes: tripData.notes || '',
-      };
-      
-      const tripRes = await createTrip(tripPayload);
-      const tripId = tripRes.trip._id;
+      if (!tripId) {
+        // No existing trip — create a new one (direct navigation to RoutePlanner)
+        const destId = tripData.destinationData?._id || tripData.destination;
+        const transportMode = TRANSPORT_MAP[tripData.transport?.toLowerCase()] || 'Other';
+        const tripPayload = {
+          destinationId:     destId,
+          travelDate:        tripData.date   || new Date().toISOString(),
+          returnDate:        tripData.endDate || new Date(Date.now() + 86400000).toISOString(),
+          people:            tripData.people  || 2,
+          transportMode,
+          accommodationType: tripData.accommodation || 'hotel',
+          totalBudget:       tripData.budget  || 15000,
+          specialNotes:      tripData.notes   || '',
+        };
+        const tripRes = await createTrip(tripPayload);
+        tripId = tripRes.trip._id;
+      }
 
+      // Always update budget with the latest route-adjusted values
       if (budgetItems && Array.isArray(budgetItems)) {
         const budgetPayload = {
-          transport: budgetItems.find(i => i.id === 'transport')?.amount || 0,
+          transport:     budgetItems.find(i => i.id === 'transport')?.amount     || 0,
           accommodation: budgetItems.find(i => i.id === 'accommodation')?.amount || 0,
-          food: budgetItems.find(i => i.id === 'food')?.amount || 0,
-          other: (budgetItems.find(i => i.id === 'entrance')?.amount || 0) +
+          food:          budgetItems.find(i => i.id === 'food')?.amount          || 0,
+          other: (budgetItems.find(i => i.id === 'entrance')?.amount   || 0) +
                  (budgetItems.find(i => i.id === 'activities')?.amount || 0) +
-                 (budgetItems.find(i => i.id === 'shopping')?.amount || 0) +
-                 (budgetItems.find(i => i.id === 'emergency')?.amount || 0),
-          userBudget: tripData.budget || 15000
+                 (budgetItems.find(i => i.id === 'shopping')?.amount   || 0) +
+                 (budgetItems.find(i => i.id === 'emergency')?.amount  || 0),
+          userBudget: tripData.budget || 15000,
         };
         await updateBudget(tripId, budgetPayload);
       }
 
-      await saveItem('trip', tripId);
+      // Only save to savedItems if not already saved (trip didn't exist yet)
+      if (!location.state?.tripId) {
+        await saveItem('trip', tripId);
+      }
+
       setStatusMsg({ type: 'success', text: '✅ Trip saved successfully!' });
       setTimeout(() => navigate('/saved'), 1500);
     } catch (error) {
-      console.error("Error saving trip from route planner:", error);
+      console.error('Error saving trip from route planner:', error);
       setStatusMsg({ type: 'error', text: '❌ Failed to save trip: ' + error.message });
     } finally {
       setSaving(false);
@@ -407,16 +416,33 @@ export default function RoutePlanner() {
               <button
                 className="btn btn-primary btn-block"
                 id="btn-start-navigation"
-                onClick={() => alert('Navigation started! (Requires GPS integration)')}
+                onClick={() => {
+                  const dest = passedDest || tripData?.destinationData;
+                  const lat = dest?.latitude || dest?.lat;
+                  const lng = dest?.longitude || dest?.lng;
+                  if (lat && lng) {
+                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`, '_blank');
+                  } else if (dest?.name) {
+                    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dest.name + ', Sri Lanka')}`, '_blank');
+                  }
+                }}
               >
                 🧭 Start Navigation
               </button>
               <button
                 className="btn btn-outline btn-block mt-3"
                 id="btn-share-route"
-                onClick={() => alert('Route link copied to clipboard!')}
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(window.location.href);
+                    setRouteShareCopied(true);
+                    setTimeout(() => setRouteShareCopied(false), 2500);
+                  } catch {
+                    prompt('Copy this route link:', window.location.href);
+                  }
+                }}
               >
-                📤 Share Route
+                {routeShareCopied ? '✅ Copied!' : '📤 Share Route'}
               </button>
               <button
                 className="btn btn-ghost btn-block mt-3"

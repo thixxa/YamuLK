@@ -9,3 +9,8 @@ export async function addReview(destinationId, rating, comment) {
 export async function getAllReviews(destinationId) {
   return api.get(`/review/${destinationId}/allReviews`);
 }
+
+// DELETE /review/:reviewId — only the author can delete
+export async function deleteReview(reviewId) {
+  return api.delete(`/review/${reviewId}`);
+}

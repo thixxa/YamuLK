@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { createTrip } from '../api/trips.js';
+import { createTrip, updateTrip } from '../api/trips.js';
 import { updateBudget } from '../api/budget.js';
 import { saveItem } from '../api/savedItems.js';
 import { getAreaCategoryRates } from '../utils/areaCosts.js';
@@ -34,6 +34,7 @@ export default function Budget() {
   const tripData = location.state?.trip;
 
   const totalBudget = tripData?.budget || 15000;
+  const isEditMode  = !!(tripData?.tripId);  // true when editing an existing trip
 
   // Calculate trip duration in days (default to 1 if dates are invalid)
   const tripDays = (() => {
@@ -94,6 +95,8 @@ export default function Budget() {
 
   const [items, setItems] = useState(getInitialItems);
   const [saving, setSaving] = useState(false);
+  const [tripSaved,   setTripSaved]   = useState(isEditMode);           // edit = already saved
+  const [savedTripId, setSavedTripId] = useState(tripData?.tripId || null); // prefill for edit
   const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
 
   const totalSpend = items.reduce((sum, item) => sum + item.amount, 0);
@@ -107,6 +110,48 @@ export default function Budget() {
     ));
   };
 
+  // ── Build budget payload (shared between save + view-route) ───────────────────
+  const buildBudgetPayload = () => ({
+    transport:     items.find(i => i.id === 'transport')?.amount     || 0,
+    accommodation: items.find(i => i.id === 'accommodation')?.amount || 0,
+    food:          items.find(i => i.id === 'food')?.amount          || 0,
+    other: (items.find(i => i.id === 'entrance')?.amount   || 0) +
+           (items.find(i => i.id === 'activities')?.amount || 0) +
+           (items.find(i => i.id === 'shopping')?.amount   || 0) +
+           (items.find(i => i.id === 'emergency')?.amount  || 0),
+    userBudget: totalBudget,
+  });
+
+  // ── Core: create OR update the trip + budget + saved record ───────────────────
+  const createAndSaveTrip = async () => {
+    const destId = tripData.destinationData?._id || tripData.destination;
+    const transportMode = TRANSPORT_MAP[tripData.transport?.toLowerCase()] || 'Other';
+    const tripPayload = {
+      destinationId:     destId,
+      travelDate:        tripData.date   || new Date().toISOString(),
+      returnDate:        tripData.endDate || new Date(Date.now() + 86400000).toISOString(),
+      people:            tripData.people,
+      transportMode,
+      accommodationType: tripData.accommodation,
+      totalBudget:       totalBudget,
+      specialNotes:      tripData.notes || '',
+    };
+
+    let tripId = tripData.tripId; // editing an existing trip?
+    if (tripId) {
+      // Edit mode — patch the existing trip document
+      await updateTrip(tripId, tripPayload);
+    } else {
+      // New trip — create and add to saved items
+      const tripRes = await createTrip(tripPayload);
+      tripId = tripRes.trip._id;
+      await saveItem('trip', tripId);
+    }
+    await updateBudget(tripId, buildBudgetPayload());
+    return tripId;
+  };
+
+  // ── "Save Plan" button handler ──────────────────────────────────────────
   const saveTrip = async () => {
     if (!tripData) {
       setStatusMsg({ type: 'error', text: 'No trip data found. Please start from the planner.' });
@@ -115,50 +160,44 @@ export default function Budget() {
     setSaving(true);
     setStatusMsg({ type: '', text: '' });
     try {
-      // 1. Create Trip
-      const destId = tripData.destinationData?._id || tripData.destination;
-
-      // Map transport mode ID to backend enum (full mapping)
-      const transportMode = TRANSPORT_MAP[tripData.transport?.toLowerCase()] || 'Other';
-
-      const tripPayload = {
-        destinationId: destId,
-        travelDate: tripData.date || new Date().toISOString(),
-        returnDate: tripData.endDate || new Date(Date.now() + 86400000).toISOString(),
-        people: tripData.people,
-        transportMode,
-        accommodationType: tripData.accommodation,
-        totalBudget: totalBudget,
-        specialNotes: tripData.notes || '',
-      };
-      
-      const tripRes = await createTrip(tripPayload);
-      const tripId = tripRes.trip._id;
-
-      // 2. Create/Update Budget
-      const budgetPayload = {
-        transport: items.find(i => i.id === 'transport')?.amount || 0,
-        accommodation: items.find(i => i.id === 'accommodation')?.amount || 0,
-        food: items.find(i => i.id === 'food')?.amount || 0,
-        other: (items.find(i => i.id === 'entrance')?.amount || 0) +
-               (items.find(i => i.id === 'activities')?.amount || 0) +
-               (items.find(i => i.id === 'shopping')?.amount || 0) +
-               (items.find(i => i.id === 'emergency')?.amount || 0),
-        userBudget: totalBudget
-      };
-      await updateBudget(tripId, budgetPayload);
-
-      // 3. Save to SavedTrips
-      await saveItem('trip', tripId);
-
+      const tripId = await createAndSaveTrip();
+      setSavedTripId(tripId);
+      setTripSaved(true);
       setStatusMsg({ type: 'success', text: '✅ Trip saved successfully!' });
       setTimeout(() => navigate('/saved'), 1500);
     } catch (error) {
-      console.error("Error saving trip:", error);
+      console.error('Error saving trip:', error);
       setStatusMsg({ type: 'error', text: '❌ Failed to save trip: ' + error.message });
     } finally {
       setSaving(false);
     }
+  };
+
+  // ── "View Route" button handler ────────────────────────────────────────────
+  // Saves the trip first (if not already saved), then navigates to RoutePlanner
+  // with the tripId so RoutePlanner knows NOT to create a second trip.
+  const handleViewRoute = async () => {
+    if (!tripData) {
+      navigate('/route', { state: { trip: tripData, destination: tripData?.destinationData, budgetItems: items } });
+      return;
+    }
+    let tripId = savedTripId;
+    if (!tripId) {
+      setSaving(true);
+      try {
+        tripId = await createAndSaveTrip();
+        setSavedTripId(tripId);
+        setTripSaved(true);
+      } catch (err) {
+        console.error('Error pre-saving trip for route:', err);
+        // Navigate anyway without tripId (RoutePlanner will create its own)
+      } finally {
+        setSaving(false);
+      }
+    }
+    navigate('/route', {
+      state: { trip: tripData, destination: tripData?.destinationData, budgetItems: items, tripId },
+    });
   };
 
   return (
@@ -315,13 +354,19 @@ export default function Budget() {
             <div className="budget-actions">
               <button
                 className="btn btn-primary"
-                onClick={() => navigate('/route', { state: { trip: tripData, destination: tripData?.destinationData, budgetItems: items } })}
+                onClick={handleViewRoute}
                 id="btn-view-route"
+                disabled={saving}
               >
-                🗺️ View Route
+                {saving ? '⏳ Saving...' : '🗺️ View Route'}
               </button>
-              <button className="btn btn-outline" id="btn-save-budget" onClick={saveTrip} disabled={saving}>
-                {saving ? '⏳ Saving...' : '💾 Save Plan'}
+              <button
+                className="btn btn-outline"
+                id="btn-save-budget"
+                onClick={saveTrip}
+                disabled={saving || tripSaved}
+              >
+                {tripSaved ? '✅ Saved!' : saving ? '⏳ Saving...' : '💾 Save Plan'}
               </button>
               <button className="btn btn-ghost" id="btn-reset-budget" onClick={() => setItems(getInitialItems())}>
                 🔄 Reset

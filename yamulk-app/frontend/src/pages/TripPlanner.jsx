@@ -48,10 +48,19 @@ export default function TripPlanner() {
   }, []);
 
   const selectedDest = destinations.find(d => d._id === form.destination) || destinations[0];
+  const editingTripId = existingTrip?.tripId || null; // present when editing from SavedTrips
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    navigate('/budget', { state: { trip: { ...form, destinationData: selectedDest } } });
+    navigate('/budget', {
+      state: {
+        trip: {
+          ...form,
+          destinationData: selectedDest,
+          ...(editingTripId ? { tripId: editingTripId } : {}),
+        },
+      },
+    });
   };
 
   if (loading) {

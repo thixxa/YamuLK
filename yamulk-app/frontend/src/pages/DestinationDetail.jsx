@@ -3,14 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import MapView from '../components/MapView';
 import { getDestinationById } from '../api/destinations.js';
-import { getAllReviews, addReview } from '../api/reviews.js';
+import { getAllReviews, addReview, deleteReview } from '../api/reviews.js';
 import { saveItem, removeSavedItemByItemId } from '../api/savedItems.js';
 import { destinations as mockDestinations } from '../data/mockData';
+import { useAuth } from '../context/AuthContext.jsx';
 import './DestinationDetail.css';
 
 export default function DestinationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [saved, setSaved] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [activePhoto, setActivePhoto] = useState(0);
@@ -27,6 +29,9 @@ export default function DestinationDetail() {
   const [reviewComment, setReviewComment] = useState('');
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewMsg, setReviewMsg] = useState({ type: '', text: '' });
+
+  // ── Share state ────────────────────────────────────────────────────────────
+  const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -120,6 +125,29 @@ export default function DestinationDetail() {
       setReviewMsg({ type: 'error', text: err.message || 'Failed to submit review.' });
     } finally {
       setReviewSubmitting(false);
+    }
+  };
+
+  // ── Delete own review ────────────────────────────────────────────────────
+  const handleDeleteReview = async (reviewId) => {
+    if (!window.confirm('Delete your review?')) return;
+    try {
+      await deleteReview(reviewId);
+      setDestReviews(prev => prev.filter(r => r._id !== reviewId));
+    } catch (err) {
+      alert(err.message || 'Failed to delete review.');
+    }
+  };
+
+  // ── Share (copy URL to clipboard) ───────────────────────────────────────
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    } catch {
+      // Fallback for browsers without clipboard API
+      prompt('Copy this link:', window.location.href);
     }
   };
 
@@ -256,7 +284,13 @@ export default function DestinationDetail() {
               <button className="btn btn-outline" onClick={handleSave} id="btn-save2" disabled={saveLoading}>
                 {saveLoading ? '⏳' : saved ? '❤️ Saved' : '🤍 Save'}
               </button>
-              <button className="btn btn-outline" id="btn-share">📤 Share</button>
+              <button
+                className="btn btn-outline"
+                id="btn-share"
+                onClick={handleShare}
+              >
+                {shareCopied ? '✅ Copied!' : '📤 Share'}
+              </button>
             </div>
 
             {/* ── Review Section ─────────────────────────────────────────── */}
@@ -345,6 +379,17 @@ export default function DestinationDetail() {
                             <span key={s} className={`review-star-static ${s <= rev.rating ? 'filled' : ''}`}>★</span>
                           ))}
                         </div>
+                        {/* Delete button — only visible on user's own review */}
+                        {user?.name && rev.userId?.name === user.name && (
+                          <button
+                            className="review-delete-btn"
+                            onClick={() => handleDeleteReview(rev._id)}
+                            title="Delete your review"
+                            id={`btn-delete-review-${rev._id}`}
+                          >
+                            🗑️
+                          </button>
+                        )}
                       </div>
                       {(rev.comment || rev.text) && (
                         <p className="review-text">{rev.comment || rev.text}</p>
