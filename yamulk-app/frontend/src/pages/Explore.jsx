@@ -6,6 +6,7 @@ import MapView from '../components/MapView';
 import { categories } from '../data/mockData';
 import { searchDestinations } from '../api/destinations.js';
 import { useSettings } from '../context/SettingsContext.jsx';
+import SkeletonLoader from '../components/SkeletonLoader';
 
 export default function Explore() {
   const navigate = useNavigate();
@@ -65,9 +66,11 @@ export default function Explore() {
 
   if (loading && destinations.length === 0) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
+      <div className="explore-page">
         <Navbar />
-        <div style={{ padding: 40, textAlign: 'center' }}>Loading destinations...</div>
+        <div style={{ paddingTop: 80 }}>
+          <SkeletonLoader type="card" count={6} />
+        </div>
       </div>
     );
   }

@@ -1,0 +1,140 @@
+.itinerary-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 10, 20, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.itinerary-modal-content {
+  background: var(--bg-surface);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-glow);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.itinerary-modal-header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.itinerary-modal-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #fff, #b0c4de);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.itinerary-modal-close {
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  color: var(--text-sub);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.itinerary-modal-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text);
+  transform: rotate(90deg);
+}
+
+.itinerary-modal-body {
+  padding: var(--space-5);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.itinerary-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+.itinerary-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.itinerary-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+/* Markdown Rendering Styles */
+.markdown-content {
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.markdown-content h1, 
+.markdown-content h2, 
+.markdown-content h3 {
+  color: var(--primary);
+  margin-top: 1.5em;
+  margin-bottom: 0.8em;
+  font-weight: 700;
+}
+
+.markdown-content h2 {
+  font-size: 1.4em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0.3em;
+}
+
+.markdown-content p {
+  margin-bottom: 1.2em;
+}
+
+.markdown-content ul, 
+.markdown-content ol {
+  margin-bottom: 1.5em;
+  padding-left: 1.5em;
+}
+
+.markdown-content li {
+  margin-bottom: 0.5em;
+}
+
+.markdown-content strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

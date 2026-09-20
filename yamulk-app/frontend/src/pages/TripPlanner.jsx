@@ -5,6 +5,7 @@ import MapView from '../components/MapView';
 import { transportModes, destinations as mockDestinations } from '../data/mockData';
 import { searchDestinations } from '../api/destinations.js';
 import { useSettings } from '../context/SettingsContext.jsx';
+import SkeletonLoader from '../components/SkeletonLoader';
 import './TripPlanner.css';
 
 export default function TripPlanner() {
@@ -67,7 +68,9 @@ export default function TripPlanner() {
     return (
       <div className="planner-page">
         <Navbar />
-        <div style={{ padding: 40, textAlign: 'center' }}>Loading planner...</div>
+        <div style={{ paddingTop: 80 }}>
+          <SkeletonLoader type="page" count={1} />
+        </div>
       </div>
     );
   }

@@ -2,11 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import MapView from '../components/MapView';
+import SkeletonLoader from '../components/SkeletonLoader';
 import { getDestinationById } from '../api/destinations.js';
 import { getAllReviews, addReview, deleteReview } from '../api/reviews.js';
 import { saveItem, removeSavedItemByItemId } from '../api/savedItems.js';
+import { getWeather } from '../api/weather.js';
 import { destinations as mockDestinations } from '../data/mockData';
 import { useAuth } from '../context/AuthContext.jsx';
+import { getWeatherEmoji } from '../utils/weatherUtils.js';
 import './DestinationDetail.css';
 
 export default function DestinationDetail() {
@@ -20,7 +23,9 @@ export default function DestinationDetail() {
 
   const [dest, setDest] = useState(null);
   const [destReviews, setDestReviews] = useState([]);
+  const [currentWeather, setCurrentWeather] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [weatherLoading, setWeatherLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // ── Review form state ────────────────────────────────────────────────────
@@ -39,6 +44,15 @@ export default function DestinationDetail() {
         const destData = await getDestinationById(id);
         setDest(destData);
         
+        try {
+          const wData = await getWeather(id);
+          setCurrentWeather(wData.currentWeather);
+        } catch (wError) {
+          console.warn("Failed to fetch current weather:", wError);
+        } finally {
+          setWeatherLoading(false);
+        }
+
         try {
           const reviewData = await getAllReviews(id);
           setDestReviews(reviewData.reviews || []);
@@ -155,7 +169,9 @@ export default function DestinationDetail() {
     return (
       <div className="detail-page">
         <Navbar />
-        <div style={{ padding: 40, textAlign: 'center' }}>Loading destination...</div>
+        <div style={{ paddingTop: 80 }}>
+          <SkeletonLoader type="page" count={1} />
+        </div>
       </div>
     );
   }
@@ -419,7 +435,15 @@ export default function DestinationDetail() {
                 </div>
                 <div className="info-card">
                   <div className="info-label">WEATHER</div>
-                  <div className="info-value">{dest.weather?.emoji || "☀️"} {dest.weather?.temp || "28"}°C</div>
+                  <div className="info-value">
+                    {weatherLoading ? (
+                      <span className="text-muted">⏳</span>
+                    ) : currentWeather ? (
+                      `${getWeatherEmoji(currentWeather.weatherCode)} ${Math.round(currentWeather.temperature)}°C`
+                    ) : (
+                      <span className="text-muted">N/A</span>
+                    )}
+                  </div>
                 </div>
                 <div className="info-card">
                   <div className="info-label">PROVINCE</div>

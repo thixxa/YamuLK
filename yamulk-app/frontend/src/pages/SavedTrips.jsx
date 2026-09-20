@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { getSavedItems, removeSavedItem } from '../api/savedItems.js';
 import { useSettings } from '../context/SettingsContext.jsx';
+import ItineraryModal from '../components/ItineraryModal';
+import SkeletonLoader from '../components/SkeletonLoader';
 import './SavedTrips.css';
 
 export default function SavedTrips() {
@@ -12,7 +14,13 @@ export default function SavedTrips() {
   const [trips, setTrips] = useState([]);
   const [favourites, setFavourites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { t } = useSettings();
+  
+  // Itinerary Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItinerary, setSelectedItinerary] = useState('');
+  const [modalTitle, setModalTitle] = useState('');
 
   useEffect(() => {
     fetchSavedItems();
@@ -56,7 +64,9 @@ export default function SavedTrips() {
     return (
       <div className="saved-page">
         <Navbar />
-        <div style={{ padding: 40, textAlign: 'center' }}>Loading saved items...</div>
+        <div style={{ paddingTop: 80 }}>
+          <SkeletonLoader type="card" count={4} />
+        </div>
       </div>
     );
   }
@@ -120,6 +130,17 @@ export default function SavedTrips() {
                       )}
                     </div>
                     <div className="saved-card-actions">
+                      <button
+                        className="btn btn-sm btn-outline"
+                        onClick={() => {
+                          setSelectedItinerary(trip.itinerary || 'No itinerary generated for this trip.');
+                          setModalTitle(`Itinerary for ${dest?.name || 'Trip'}`);
+                          setIsModalOpen(true);
+                        }}
+                        title="View Itinerary"
+                      >
+                        📄 View
+                      </button>
                       <button
                         className="btn btn-sm btn-primary"
                         onClick={() => {
@@ -209,6 +230,13 @@ export default function SavedTrips() {
           )
         )}
       </div>
+
+      <ItineraryModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        markdownText={selectedItinerary}
+        title={modalTitle}
+      />
     </div>
   );
 }

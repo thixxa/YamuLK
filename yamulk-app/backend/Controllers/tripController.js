@@ -1,4 +1,6 @@
 import Trip from "../Models/tripsModel.js";
+import Destination from "../Models/destinationModel.js";
+import { GoogleGenAI } from "@google/genai";
 
 export async function getUserTrips(req, res) {
   try {
@@ -57,14 +59,69 @@ export async function generateItinerary(req, res) {
       });
     }
 
-    // Temporary itinerary
-    const itinerary = `
-      Day 1: Travel to the selected destination using ${transportMode}.
-      Accommodation: ${accommodationType}.
-      Trip group: ${people} person(s).
-      Budget: Rs. ${totalBudget}.
-      Notes: ${specialNotes || "None"}.
-          `.trim();
+    // Calculate trip duration
+    const tripDays = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
+
+    // Fetch destination name for the prompt
+    let destinationName = "the selected destination";
+    try {
+      const dest = await Destination.findById(destinationId);
+      if (dest) destinationName = dest.name;
+    } catch (err) {
+      console.warn("Could not fetch destination for itinerary generation:", err);
+    }
+
+    let itinerary = "";
+
+    try {
+      if (!process.env.GEMINI_API_KEY) {
+        throw new Error("GEMINI_API_KEY is not configured");
+      }
+      
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      
+      const prompt = `
+        You are an expert travel planner for Sri Lanka. Create a day-by-day travel itinerary for a trip to ${destinationName}, Sri Lanka.
+        
+        Trip Details:
+        - Duration: ${tripDays} days
+        - Group Size: ${people} person(s)
+        - Transport: ${transportMode}
+        - Accommodation: ${accommodationType}
+        - Total Budget: LKR ${totalBudget}
+        - Special Notes/Preferences: ${specialNotes || "None"}
+        
+        Requirements:
+        1. Format the response in clean, structural Markdown.
+        2. Do not use a main # heading (e.g. no # Trip to Sigiriya). Start directly with ## Day 1.
+        3. Break down each day logically (morning, afternoon, evening activities).
+        4. Keep the suggestions realistic based on the budget and transport mode.
+        5. Provide a brief summary of the trip at the end.
+      `;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+      });
+
+      itinerary = response.text || "";
+    } catch (aiError) {
+      console.error("AI Itinerary Generation failed, using fallback:", aiError.message);
+      // Fallback itinerary if AI fails
+      itinerary = `
+## Basic Itinerary for ${destinationName}
+
+**Day 1**
+* Travel to ${destinationName} using ${transportMode}.
+* Check in to your ${accommodationType}.
+* Settle in and explore the local area.
+
+**Trip Details**
+* **Group:** ${people} person(s)
+* **Budget:** Rs. ${totalBudget}
+* **Notes:** ${specialNotes || "None"}
+      `.trim();
+    }
 
     const newTrip = new Trip({
       userId: req.user._id,
