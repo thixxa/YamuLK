@@ -27,8 +27,8 @@ export async function getWeather(req, res) {
       `https://api.open-meteo.com/v1/forecast` +
       `?latitude=${location.latitude}` +
       `&longitude=${location.longitude}` +
-      `&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m` +
-      `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max` +
+      `&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,relative_humidity_2m,uv_index` +
+      `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max,sunrise,sunset` +
       `&timezone=Asia%2FColombo`;
 
     const weatherResponse = await fetch(weatherUrl);
@@ -58,6 +58,8 @@ export async function getWeather(req, res) {
             precipitation: weather.current.precipitation,
             windSpeed: weather.current.wind_speed_10m,
             weatherCode: weather.current.weather_code,
+            humidity: weather.current.relative_humidity_2m,
+            uvIndex: weather.current.uv_index,
         },
 
         forecast: weather.daily.time.map((date, index) => ({
@@ -67,6 +69,9 @@ export async function getWeather(req, res) {
             maxTemperature: weather.daily.temperature_2m_max[index],
             minTemperature: weather.daily.temperature_2m_min[index],
             rainProbability: weather.daily.precipitation_probability_max[index],
+            uvIndexMax: weather.daily.uv_index_max[index],
+            sunrise: weather.daily.sunrise[index],
+            sunset: weather.daily.sunset[index],
         })),
         });
 

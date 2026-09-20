@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import MapView from '../components/MapView';
 import { getDestinationById } from '../api/destinations.js';
-import { getAllReviews } from '../api/reviews.js';
+import { getAllReviews, addReview } from '../api/reviews.js';
 import { saveItem, removeSavedItemByItemId } from '../api/savedItems.js';
 import { destinations as mockDestinations } from '../data/mockData';
 import './DestinationDetail.css';
@@ -20,6 +20,13 @@ export default function DestinationDetail() {
   const [destReviews, setDestReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // ── Review form state ────────────────────────────────────────────────────
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewHover, setReviewHover] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewMsg, setReviewMsg] = useState({ type: '', text: '' });
 
   useEffect(() => {
     async function loadData() {
@@ -90,6 +97,29 @@ export default function DestinationDetail() {
       console.error('Save error:', err);
     } finally {
       setSaveLoading(false);
+    }
+  };
+
+  // ── Submit review ────────────────────────────────────────────────────────
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (reviewRating === 0) {
+      setReviewMsg({ type: 'error', text: 'Please select a star rating.' });
+      return;
+    }
+    setReviewSubmitting(true);
+    setReviewMsg({ type: '', text: '' });
+    try {
+      const res = await addReview(id, reviewRating, reviewComment.trim());
+      // Prepend new review to the list
+      setDestReviews(prev => [res.review, ...prev]);
+      setReviewRating(0);
+      setReviewComment('');
+      setReviewMsg({ type: 'success', text: '✅ Review submitted successfully!' });
+    } catch (err) {
+      setReviewMsg({ type: 'error', text: err.message || 'Failed to submit review.' });
+    } finally {
+      setReviewSubmitting(false);
     }
   };
 
@@ -226,31 +256,109 @@ export default function DestinationDetail() {
               <button className="btn btn-outline" onClick={handleSave} id="btn-save2" disabled={saveLoading}>
                 {saveLoading ? '⏳' : saved ? '❤️ Saved' : '🤍 Save'}
               </button>
-
               <button className="btn btn-outline" id="btn-share">📤 Share</button>
             </div>
 
-            {/* Reviews */}
-            {destReviews.length > 0 && (
-              <>
-                <h3 className="nearby-title mt-8">💬 Traveller Reviews</h3>
-                <div className="reviews-list">
+            {/* ── Review Section ─────────────────────────────────────────── */}
+            <div className="review-section" id="review-section">
+              <div className="review-section-header">
+                <h3 className="review-section-title">💬 Traveller Reviews</h3>
+                {destReviews.length > 0 && (
+                  <span className="review-count-badge">{destReviews.length} review{destReviews.length !== 1 ? 's' : ''}</span>
+                )}
+              </div>
+
+              {/* Write a review form */}
+              <div className="write-review-card" id="write-review-form">
+                <div className="write-review-title">✍️ Write a Review</div>
+
+                {/* Star picker */}
+                <div className="star-picker" id="star-picker">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <button
+                      key={star}
+                      type="button"
+                      className={`star-btn ${
+                        star <= (reviewHover || reviewRating) ? 'active' : ''
+                      }`}
+                      onClick={() => setReviewRating(star)}
+                      onMouseEnter={() => setReviewHover(star)}
+                      onMouseLeave={() => setReviewHover(0)}
+                      id={`star-${star}`}
+                      title={`${star} star${star > 1 ? 's' : ''}`}
+                    >
+                      ★
+                    </button>
+                  ))}
+                  {reviewRating > 0 && (
+                    <span className="star-label">
+                      {['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'][reviewRating]}
+                    </span>
+                  )}
+                </div>
+
+                {/* Comment textarea */}
+                <textarea
+                  className="review-textarea"
+                  id="review-comment"
+                  placeholder="Share your experience at this destination... (optional)"
+                  value={reviewComment}
+                  onChange={e => setReviewComment(e.target.value)}
+                  rows={3}
+                  maxLength={1000}
+                />
+
+                {/* Status message */}
+                {reviewMsg.text && (
+                  <div className={`review-msg review-msg--${reviewMsg.type}`}>
+                    {reviewMsg.text}
+                  </div>
+                )}
+
+                <button
+                  className="btn btn-primary"
+                  id="btn-submit-review"
+                  onClick={handleSubmitReview}
+                  disabled={reviewSubmitting || reviewRating === 0}
+                >
+                  {reviewSubmitting ? '⏳ Submitting...' : '📤 Submit Review'}
+                </button>
+              </div>
+
+              {/* Existing reviews list */}
+              {destReviews.length > 0 ? (
+                <div className="reviews-list" id="reviews-list">
                   {destReviews.map(rev => (
                     <div key={rev._id || rev.id} className="review-card">
                       <div className="review-header">
-                        <div className="avatar" style={{ width: 36, height: 36, fontSize: 13 }}>{rev.userId?.name?.charAt(0) || "U"}</div>
-                        <div>
-                          <div className="review-user">{rev.userId?.name || "Unknown User"}</div>
-                          <div className="review-date text-xs text-muted">{new Date(rev.createdAt || rev.date).toLocaleDateString()}</div>
+                        <div className="avatar" style={{ width: 38, height: 38, fontSize: 14 }}>
+                          {rev.userId?.name?.charAt(0)?.toUpperCase() || 'U'}
                         </div>
-                        <div className="review-stars">{'⭐'.repeat(rev.rating)}</div>
+                        <div style={{ flex: 1 }}>
+                          <div className="review-user">{rev.userId?.name || 'Anonymous'}</div>
+                          <div className="review-date text-xs text-muted">
+                            {new Date(rev.createdAt || rev.date).toLocaleDateString('en-LK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </div>
+                        </div>
+                        <div className="review-stars-row">
+                          {[1,2,3,4,5].map(s => (
+                            <span key={s} className={`review-star-static ${s <= rev.rating ? 'filled' : ''}`}>★</span>
+                          ))}
+                        </div>
                       </div>
-                      <p className="review-text">{rev.comment || rev.text}</p>
+                      {(rev.comment || rev.text) && (
+                        <p className="review-text">{rev.comment || rev.text}</p>
+                      )}
                     </div>
                   ))}
                 </div>
-              </>
-            )}
+              ) : (
+                <div className="reviews-empty">
+                  <div className="reviews-empty-icon">🗺️</div>
+                  <p>No reviews yet — be the first to share your experience!</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Right panel */}

@@ -61,26 +61,63 @@ export default function Weather() {
   }, [selectedDest]);
 
   const dest = destinations.find(d => d._id === selectedDest) || null;
+
+  // ── WMO weather code → emoji ──────────────────────────────────────────
+  function getWeatherEmoji(code) {
+    if (code === 0)              return '☀️';   // Clear sky
+    if (code === 1)              return '🌤️';   // Mainly clear
+    if (code === 2)              return '⛅';   // Partly cloudy
+    if (code === 3)              return '☁️';   // Overcast
+    if (code === 45 || code === 48) return '🌫️'; // Fog
+    if (code >= 51 && code <= 55)  return '🌦️'; // Drizzle
+    if (code >= 61 && code <= 67)  return '🌧️'; // Rain
+    if (code >= 71 && code <= 77)  return '❄️';   // Snow
+    if (code >= 80 && code <= 82)  return '🌦️'; // Rain showers
+    if (code === 85 || code === 86) return '🌨️'; // Snow showers
+    if (code === 95)             return '⛈️';   // Thunderstorm
+    if (code === 96 || code === 99) return '⚡';   // Thunderstorm + hail
+    return '🌤️'; // fallback
+  }
+
+  // ── WMO weather code → background gradient ───────────────────────────
+  function getWeatherGradient(code) {
+    if (code === 0 || code === 1)  return 'linear-gradient(160deg, #f59e0b, #ef7c1a)'; // sunny
+    if (code === 2 || code === 3)  return 'linear-gradient(160deg, #7090a8, #4a6a82)'; // cloudy
+    if (code === 45 || code === 48) return 'linear-gradient(160deg, #8a9aaa, #6a7a88)'; // fog
+    if (code >= 51 && code <= 55)  return 'linear-gradient(160deg, #5a8a9b, #3a6a7e)'; // drizzle
+    if (code >= 61 && code <= 67)  return 'linear-gradient(160deg, #4a7a9b, #2d5f7e)'; // rain
+    if (code >= 71 && code <= 86)  return 'linear-gradient(160deg, #a0b4c8, #7090a8)'; // snow
+    if (code >= 95)                return 'linear-gradient(160deg, #2d2d4e, #1a1a36)'; // thunder
+    return 'linear-gradient(160deg, #2ea0be, #0e7c86)'; // default
+  }
+
+  const currentCode = weatherData?.currentWeather?.weatherCode;
+
   const weather = weatherData ? {
     location: `${dest?.name}, ${dest?.province}`,
     temp: weatherData.currentWeather?.temperature || 28,
-    emoji: "🌤️",
-    condition: weatherData.forecast?.[0]?.weather || "Sunny",
+    emoji: getWeatherEmoji(currentCode),
+    condition: weatherData.currentWeather?.weatherCode !== undefined
+      ? (weatherData.forecast?.[0]?.weather || 'Clear sky')
+      : 'Sunny',
     feelsLike: weatherData.currentWeather?.feelsLike || 30,
     rainProb: weatherData.forecast?.[0]?.rainProbability || 0,
-    humidity: 60, // not returned by open-meteo basic
-    windSpeed: weatherData.currentWeather?.windSpeed || 10,
-    uvIndex: 6, // not returned by open-meteo basic
+    humidity: weatherData.currentWeather?.humidity ?? '--',
+    windSpeed: weatherData.currentWeather?.windSpeed || 0,
+    // Use current UV if daytime; fall back to today's daily max at night
+    uvIndex: weatherData.currentWeather?.uvIndex > 0
+      ? Math.round(weatherData.currentWeather.uvIndex * 10) / 10
+      : (weatherData.forecast?.[0]?.uvIndexMax
+          ? Math.round(weatherData.forecast[0].uvIndexMax * 10) / 10
+          : '--'),
+    // Sunrise/sunset from today's forecast
+    sunrise: weatherData.forecast?.[0]?.sunrise
+      ? new Date(weatherData.forecast[0].sunrise).toLocaleTimeString('en-LK', { hour: '2-digit', minute: '2-digit' })
+      : '--',
+    sunset: weatherData.forecast?.[0]?.sunset
+      ? new Date(weatherData.forecast[0].sunset).toLocaleTimeString('en-LK', { hour: '2-digit', minute: '2-digit' })
+      : '--',
   } : null;
-
-  const getWeatherGradient = (condition) => {
-    if (!condition) return 'linear-gradient(160deg, #2ea0be, #0e7c86)';
-    if (condition.toLowerCase().includes('rain')) return 'linear-gradient(160deg, #4a7a9b, #2d5f7e)';
-    if (condition.toLowerCase().includes('cloud')) return 'linear-gradient(160deg, #7090a8, #4a6a82)';
-    if (condition.toLowerCase().includes('mist') || condition.toLowerCase().includes('fog'))
-      return 'linear-gradient(160deg, #8a9aaa, #6a7a88)';
-    return 'linear-gradient(160deg, #2ea0be, #0e7c86)';
-  };
 
   if (loading || !dest || !weather) {
     return (
@@ -120,7 +157,7 @@ export default function Weather() {
         <div className="weather-layout">
           {/* Current weather hero */}
           <div className="weather-hero-col">
-            <div className="weather-hero-card" style={{ background: getWeatherGradient(weather.condition) }}>
+            <div className="weather-hero-card" style={{ background: getWeatherGradient(currentCode) }}>
               <div className="weather-orb-1"></div>
               <div className="weather-orb-2"></div>
               <div className="weather-hero-content">
@@ -137,7 +174,7 @@ export default function Weather() {
               <div className="forecast-row">
                 {(weatherData?.forecast || []).slice(0, 7).map((day, i) => {
                   const dayName = day.date ? new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' }) : `Day ${i+1}`;
-                  const emoji = day.weather?.toLowerCase().includes('rain') ? '🌧️' : day.weather?.toLowerCase().includes('cloud') ? '⛅' : '☀️';
+                  const emoji = getWeatherEmoji(day.weatherCode);
                   return (
                     <div key={i} className={`forecast-day ${i === 0 ? 'today' : ''}`}>
                       <div className="forecast-day-name">{dayName}</div>
@@ -184,8 +221,13 @@ export default function Weather() {
               </div>
               <div className="wd-card">
                 <div className="wd-icon">🌅</div>
-                <div className="wd-val">5:58 AM</div>
+                <div className="wd-val">{weather.sunrise}</div>
                 <div className="wd-lbl">Sunrise</div>
+              </div>
+              <div className="wd-card">
+                <div className="wd-icon">🌇</div>
+                <div className="wd-val">{weather.sunset}</div>
+                <div className="wd-lbl">Sunset</div>
               </div>
             </div>
 
