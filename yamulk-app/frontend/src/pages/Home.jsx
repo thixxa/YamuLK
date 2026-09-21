@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import DestinationCard from '../components/DestinationCard';
+import SkeletonLoader from '../components/SkeletonLoader';
 import { categories } from '../data/mockData';
 import { searchDestinations } from '../api/destinations.js';
 import { useSettings } from '../context/SettingsContext.jsx';
@@ -45,6 +46,18 @@ export default function Home() {
     }, 2000);
     return () => clearInterval(timer);
   }, []);
+
+  // Show skeleton loader while fetching (Criterion 3 — Visibility / System Status)
+  if (loading) {
+    return (
+      <div className="home-page">
+        <Navbar />
+        <div style={{ paddingTop: 80 }}>
+          <SkeletonLoader type="card" count={6} />
+        </div>
+      </div>
+    );
+  }
 
   const filtered = destinations.filter(d => {
     const matchCategory = activeCategory === 'all' || d.category === activeCategory;

@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext.jsx';
 
 import Splash from './pages/Splash';
 import Login from './pages/Login';
+import ResetPassword from './pages/ResetPassword';
 import Home from './pages/Home';
 import Explore from './pages/Explore';
 import DestinationDetail from './pages/DestinationDetail';
@@ -27,8 +28,9 @@ export default function App() {
         <Route path="/" element={<Navigate to="/splash" replace />} />
         <Route path="/splash" element={<Splash />} />
         <Route path="/login" element={<Login />} />
+        {/* Public password reset route — token in URL is the auth mechanism */}
+        <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Protected pages — require login */}
         <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
         <Route path="/destination/:id" element={<ProtectedRoute><DestinationDetail /></ProtectedRoute>} />

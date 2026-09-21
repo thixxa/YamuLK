@@ -4,6 +4,7 @@ import './Login.css';
 import logo from '../assets/YamuLK_logo.png';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useGoogleLogin } from '@react-oauth/google';
+import { forgotPassword } from '../api/auth.js';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -29,6 +30,32 @@ export default function Login() {
   const [showLoginPw, setShowLoginPw] = useState(false);
   const [showRegPw, setShowRegPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [forgotMsg, setForgotMsg] = useState(false);  // legacy inline hint
+
+  // ── Forgot Password inline form ─────────────────────────────────────────────
+  const [showForgot, setShowForgot]       = useState(false);
+  const [forgotEmail, setForgotEmail]     = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotStatus, setForgotStatus]   = useState({ type: '', text: '' });
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!forgotEmail) {
+      setForgotStatus({ type: 'error', text: 'Please enter your email address.' });
+      return;
+    }
+    setForgotLoading(true);
+    setForgotStatus({ type: '', text: '' });
+    try {
+      const res = await forgotPassword(forgotEmail);
+      setForgotStatus({ type: 'success', text: res.message });
+      setForgotEmail('');
+    } catch (err) {
+      setForgotStatus({ type: 'error', text: err.message || 'Something went wrong.' });
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
@@ -171,7 +198,14 @@ export default function Login() {
                 <div className={`ng-field ${focused === 'loginPassword' ? 'ng-field-focus' : ''}`}>
                   <div className="ng-field-header">
                     <label>Password</label>
-                    <span className="ng-forgot">Forgot?</span>
+                    <button
+                      type="button"
+                      className="ng-forgot"
+                      onClick={() => { setShowForgot(v => !v); setForgotStatus({ type: '', text: '' }); setForgotEmail(''); }}
+                      aria-label="Open forgot password form"
+                    >
+                      {showForgot ? '× Cancel' : 'Forgot?'}
+                    </button>
                   </div>
                   <div className="ng-input-wrap">
                     <span className="ng-input-icon">🔒</span>
@@ -196,6 +230,48 @@ export default function Login() {
                     </button>
                   </div>
                 </div>
+
+                {/* ── Inline Forgot Password Panel ── */}
+                {showForgot && (
+                  <div className="ng-forgot-panel" id="forgot-password-panel">
+                    <div className="ng-forgot-panel-title">🔑 Reset Password</div>
+                    <p className="ng-forgot-panel-sub">
+                      Enter your email address and we'll send you a reset link.
+                    </p>
+
+                    {forgotStatus.text && (
+                      <div className={`ng-forgot-status ng-forgot-status--${forgotStatus.type}`} role="alert">
+                        {forgotStatus.type === 'success' ? '✅' : '❌'} {forgotStatus.text}
+                      </div>
+                    )}
+
+                    <form onSubmit={handleForgotPassword} style={{ marginTop: 10 }}>
+                      <div className="ng-input-wrap" style={{ marginBottom: 10 }}>
+                        <span className="ng-input-icon">✉️</span>
+                        <input
+                          type="email"
+                          id="forgot-email"
+                          placeholder="your@email.com"
+                          value={forgotEmail}
+                          onChange={e => setForgotEmail(e.target.value)}
+                          autoComplete="email"
+                          required
+                          style={{ paddingLeft: 40 }}
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="btn btn-primary"
+                        id="btn-send-reset-email"
+                        disabled={forgotLoading}
+                        style={{ width: '100%', padding: '10px', borderRadius: 'var(--radius-full)' }}
+                      >
+                        {forgotLoading ? '⏳ Sending…' : '📧 Send Reset Link'}
+                      </button>
+                    </form>
+                  </div>
+                )}
+
               </>
             )}
 

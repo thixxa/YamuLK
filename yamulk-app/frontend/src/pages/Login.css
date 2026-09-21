@@ -701,3 +701,53 @@
   border-color: rgba(255, 80, 80, 0.5) !important;
   box-shadow: 0 0 0 3px rgba(255, 80, 80, 0.08);
 }
+
+/* ── Forgot button (inline in field header) ── */
+.ng-forgot {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0;
+  transition: color 0.2s, opacity 0.2s;
+  font-family: var(--font-body);
+}
+.ng-forgot:hover { opacity: 0.75; }
+
+/* ── Inline Forgot Password Panel ── */
+.ng-forgot-panel {
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-focus);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-top: 8px;
+  animation: forgot-slide-in 0.25s var(--ease-out) both;
+}
+@keyframes forgot-slide-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+.ng-forgot-panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.ng-forgot-panel-sub {
+  font-size: 12.5px;
+  color: var(--text-sub);
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+.ng-forgot-status {
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+.ng-forgot-status--error   { background: var(--danger-dim);  border: 1px solid var(--danger);  color: var(--danger);  }
+.ng-forgot-status--success { background: var(--success-dim); border: 1px solid var(--success); color: var(--success); }

@@ -42,7 +42,9 @@ export default function SavedTrips() {
     }
   };
 
+  // Confirm before deleting a saved trip (Criterion 4 — Error Prevention)
   const removeTrip = async (savedId) => {
+    if (!window.confirm('Delete this saved trip? This action cannot be undone.')) return;
     try {
       await removeSavedItem(savedId);
       setTrips(trips.filter(t => t._id !== savedId));
@@ -51,7 +53,9 @@ export default function SavedTrips() {
     }
   };
 
+  // Confirm before removing a favourite (Criterion 4 — Error Prevention)
   const removeFavourite = async (savedId) => {
+    if (!window.confirm('Remove this destination from favourites?')) return;
     try {
       await removeSavedItem(savedId);
       setFavourites(favourites.filter(f => f._id !== savedId));
@@ -85,22 +89,24 @@ export default function SavedTrips() {
           </button>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs — using <button> for keyboard accessibility (Criterion 6) */}
         <div className="tab-bar mb-6" style={{ maxWidth: 400 }} id="saved-tabs">
-          <div
+          <button
             className={`tab-item ${activeTab === 'itineraries' ? 'active' : ''}`}
             onClick={() => setActiveTab('itineraries')}
             id="tab-itineraries"
+            type="button"
           >
             {t('savedItineraries')}
-          </div>
-          <div
+          </button>
+          <button
             className={`tab-item ${activeTab === 'favourites' ? 'active' : ''}`}
             onClick={() => setActiveTab('favourites')}
             id="tab-favourites"
+            type="button"
           >
             {t('favTab')}
-          </div>
+          </button>
         </div>
 
         {activeTab === 'itineraries' ? (
@@ -175,6 +181,7 @@ export default function SavedTrips() {
                         className="btn btn-sm btn-danger"
                         onClick={() => removeTrip(savedObj._id)}
                         id={`btn-delete-trip-${savedObj._id}`}
+                        title="Delete this trip"
                       >
                         🗑️
                       </button>
@@ -213,7 +220,13 @@ export default function SavedTrips() {
                       <div className="saved-card-name">{fav.name}</div>
                       <div className="text-xs text-muted">📍 {fav.province}</div>
                     </div>
-                    <div className="fav-heart" onClick={(e) => { e.stopPropagation(); removeFavourite(favObj._id); }}>❤️</div>
+                    <div
+                      className="fav-heart"
+                      onClick={(e) => { e.stopPropagation(); removeFavourite(favObj._id); }}
+                      title="Remove from favourites"
+                      role="button"
+                      aria-label={`Remove ${fav.name} from favourites`}
+                    >❤️</div>
                   </div>
                 );
               })}

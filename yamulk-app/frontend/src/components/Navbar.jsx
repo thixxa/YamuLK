@@ -50,7 +50,12 @@ export default function Navbar() {
         </ul>
 
         <div className="navbar-right">
-          <button className="btn-icon nav-icon-btn" title="Notifications">
+          <button
+            className="btn-icon nav-icon-btn"
+            title="Notifications"
+            aria-label="Notifications"
+            onClick={() => {}}
+          >
             <span>🔔</span>
           </button>
 

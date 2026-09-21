@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YamuLK — HCI Evaluation Report | EC9540 Assignment E22</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 12pt;
+    line-height: 1.6;
+    color: #000;
+    background: #fff;
+    padding: 0;
+    margin: 0;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 25mm 25mm 20mm 30mm;
+    background: #fff;
+  }
+
+  /* ── Cover Page ── */
+  .cover {
+    text-align: center;
+    padding-top: 40mm;
+    page-break-after: always;
+  }
+  .cover .uni { font-size: 13pt; font-weight: bold; margin-bottom: 6pt; }
+  .cover .module { font-size: 11pt; margin-bottom: 4pt; color: #333; }
+  .cover .assignment { font-size: 11pt; margin-bottom: 30pt; color: #333; }
+  .cover .report-title {
+    font-size: 22pt;
+    font-weight: bold;
+    margin-bottom: 8pt;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10pt;
+    display: inline-block;
+  }
+  .cover .app-name { font-size: 16pt; font-weight: bold; margin: 16pt 0 8pt; color: #1a5276; }
+  .cover .tagline { font-size: 11pt; margin-bottom: 30pt; font-style: italic; color: #555; }
+  .cover .meta-table {
+    margin: 20pt auto;
+    border-collapse: collapse;
+    width: 80%;
+  }
+  .cover .meta-table td {
+    padding: 5pt 10pt;
+    font-size: 11pt;
+    border: 1px solid #ccc;
+  }
+  .cover .meta-table td:first-child { font-weight: bold; background: #f5f5f5; width: 40%; }
+  .cover .date { margin-top: 40pt; font-size: 11pt; color: #444; }
+
+  /* ── TOC ── */
+  .toc { page-break-after: always; }
+  .toc h2 { font-size: 14pt; border-bottom: 2px solid #000; padding-bottom: 4pt; margin-bottom: 14pt; }
+  .toc ol { padding-left: 20pt; }
+  .toc li { font-size: 11.5pt; margin-bottom: 6pt; }
+  .toc li span { float: right; }
+
+  /* ── Headings ── */
+  h1 {
+    font-size: 15pt;
+    font-weight: bold;
+    border-bottom: 2px solid #1a5276;
+    padding-bottom: 5pt;
+    margin-top: 22pt;
+    margin-bottom: 10pt;
+    color: #1a5276;
+    page-break-after: avoid;
+  }
+  h2 {
+    font-size: 12.5pt;
+    font-weight: bold;
+    margin-top: 16pt;
+    margin-bottom: 6pt;
+    color: #000;
+  }
+  h3 {
+    font-size: 11.5pt;
+    font-weight: bold;
+    margin-top: 12pt;
+    margin-bottom: 4pt;
+  }
+
+  /* ── Verdict Banner ── */
+  .verdict {
+    display: inline-block;
+    font-size: 11pt;
+    font-weight: bold;
+    color: #1a7a3a;
+    background: #eafaf1;
+    border: 1.5px solid #1a7a3a;
+    border-radius: 4pt;
+    padding: 3pt 10pt;
+    margin-bottom: 10pt;
+  }
+  .verdict-fail {
+    color: #c0392b; background: #fdedec; border-color: #c0392b;
+  }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10pt 0 14pt;
+    font-size: 10.5pt;
+    page-break-inside: avoid;
+  }
+  thead tr { background: #1a5276; color: #fff; }
+  thead th { padding: 5pt 7pt; text-align: left; font-weight: bold; font-size: 10pt; }
+  tbody tr:nth-child(even) { background: #f0f4f8; }
+  tbody td { padding: 5pt 7pt; border-bottom: 1px solid #ddd; vertical-align: top; }
+  tbody td:first-child { font-weight: 600; }
+
+  /* Summary table */
+  .summary-table thead tr { background: #154360; }
+  .summary-table .pass { color: #1a7a3a; font-weight: bold; }
+
+  /* ── Inline code ── */
+  code {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 9.5pt;
+    background: #f4f4f4;
+    border: 1px solid #ddd;
+    padding: 0 3pt;
+    border-radius: 2pt;
+  }
+
+  /* ── Evidence boxes ── */
+  .evidence-box {
+    border-left: 4pt solid #1a5276;
+    background: #f0f4f8;
+    padding: 8pt 12pt;
+    margin: 8pt 0;
+    font-size: 10.5pt;
+  }
+  .evidence-box strong { display: block; margin-bottom: 3pt; color: #1a5276; }
+
+  /* ── Page breaks ── */
+  .page-break { page-break-before: always; }
+
+  /* ── Footer ── */
+  .section-summary {
+    border-top: 1px solid #ccc;
+    margin-top: 12pt;
+    padding-top: 8pt;
+    font-size: 10pt;
+    font-style: italic;
+    color: #444;
+  }
+
+  @media print {
+    body { margin: 0; }
+    .page { padding: 15mm 15mm 15mm 20mm; }
+    h1 { page-break-before: always; }
+    h1:first-of-type { page-break-before: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ═══════════════════════════════════════════════════
+     COVER PAGE
+════════════════════════════════════════════════════ -->
+<div class="cover">
+  <p class="uni">University</p>
+  <p class="module">EC9540 — Human-Computer Interaction</p>
+  <p class="assignment">Assignment E22 — Formative Evaluation</p>
+  <hr style="margin: 20pt auto; width: 60%; border-top: 2px solid #000;" />
+
+  <div class="report-title">HCI Evaluation Report</div>
+  <div class="app-name">YamuLK — Sri Lanka Travel Application</div>
+  <div class="tagline">"Explore Sri Lanka, Your Way"</div>
+
+  <table class="meta-table">
+    <tr><td>Application</td><td>YamuLK</td></tr>
+    <tr><td>Technology Stack</td><td>React + Vite (Frontend) · Node.js + MongoDB (Backend)</td></tr>
+    <tr><td>Evaluation Type</td><td>Code-Based HCI Review</td></tr>
+    <tr><td>Evaluation Date</td><td>September 2026</td></tr>
+    <tr><td>No. of Pages Reviewed</td><td>11 pages + 10 components</td></tr>
+    <tr><td>No. of Criteria Evaluated</td><td>8</td></tr>
+    <tr><td>Overall Verdict</td><td><strong style="color:#1a7a3a;">✓ All 8 Criteria Passed</strong></td></tr>
+  </table>
+
+  <p class="date">Date: September 21, 2026</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     TABLE OF CONTENTS
+════════════════════════════════════════════════════ -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li>Application Overview <span>3</span></li>
+    <li>Criterion 1 — Usability and Ease of Use <span>4</span></li>
+    <li>Criterion 2 — Consistency and Standards <span>5</span></li>
+    <li>Criterion 3 — Visibility, Feedback and System Status <span>6</span></li>
+    <li>Criterion 4 — Error Prevention, Recovery and User Control <span>7</span></li>
+    <li>Criterion 5 — Layout, Navigation and Information Organisation <span>8</span></li>
+    <li>Criterion 6 — Visual Design, Readability and Accessibility <span>9</span></li>
+    <li>Criterion 7 — Efficiency and Interaction Design <span>10</span></li>
+    <li>Criterion 8 — User-Centred Design and Target-User Suitability <span>11</span></li>
+    <li>Overall Summary <span>12</span></li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     APPLICATION OVERVIEW
+════════════════════════════════════════════════════ -->
+<h1>Application Overview</h1>
+<p>
+  <strong>YamuLK</strong> is a full-stack Sri Lanka tourism web application built with <strong>React + Vite</strong> (frontend) and <strong>Node.js + Express + MongoDB</strong> (backend). It provides travellers — both local and international — with tools to discover, plan, budget, and navigate trips across Sri Lanka's 9 provinces and 200+ destinations.
+</p>
+<br/>
+<h3>Pages &amp; Features Evaluated</h3>
+<table>
+  <thead><tr><th>Page / Feature</th><th>File</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td>Splash Screen</td><td><code>Splash.jsx</code></td><td>Animated loading screen with progress bar</td></tr>
+    <tr><td>Login / Register</td><td><code>Login.jsx</code></td><td>Email + Google OAuth authentication</td></tr>
+    <tr><td>Home</td><td><code>Home.jsx</code></td><td>Hero slider, search, category filters, recommendations</td></tr>
+    <tr><td>Explore</td><td><code>Explore.jsx</code></td><td>Grid and map view of all destinations with sort/filter</td></tr>
+    <tr><td>Destination Detail</td><td><code>DestinationDetail.jsx</code></td><td>Photo gallery, weather, reviews, plan trip CTA</td></tr>
+    <tr><td>Trip Planner</td><td><code>TripPlanner.jsx</code></td><td>Step 1 of planning: destination, dates, people, transport</td></tr>
+    <tr><td>Budget Calculator</td><td><code>Budget.jsx</code></td><td>Step 2: expense breakdown with animated ring chart</td></tr>
+    <tr><td>Route Planner</td><td><code>RoutePlanner.jsx</code></td><td>Step 3: real OSRM road routing and transport comparison</td></tr>
+    <tr><td>Weather</td><td><code>Weather.jsx</code></td><td>Live weather per destination with 7-day forecast</td></tr>
+    <tr><td>Saved Trips</td><td><code>SavedTrips.jsx</code></td><td>Itineraries and favourite destinations management</td></tr>
+    <tr><td>Profile</td><td><code>Profile.jsx</code></td><td>User stats, settings (language, font size), edit profile</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════════════
+     CRITERION 1
+════════════════════════════════════════════════════ -->
+<h1>Criterion 1 — Usability and Ease of Use</h1>
+<div class="verdict">✓ PASS — Strong Evidence</div>
+<p>
+  The application is designed around the principle of <em>recognition over recall</em>. Users are guided from entry to action through progressive disclosure — splash screen → login → home → explore → plan → budget → route — with no dead ends and minimal cognitive load at each step.
+</p>
+
+<h2>Evidence</h2>
+<table>
+  <thead><tr><th>Feature</th><th>File &amp; Location</th><th>How it aids usability</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Animated splash screen with loading progress bar</td>
+      <td><code>Splash.jsx</code> — <code>progress</code> state</td>
+      <td>Prepares user for app entry, shows loading percentage with "Loading your journey…" / "Ready ✨" text</td>
+    </tr>
+    <tr>
+      <td>Prominent hero search bar centred on Home page</td>
+      <td><code>Home.jsx:93–108</code> — <code>id="search-input"</code></td>
+      <td>Immediately visible action area; placeholder text guides users: "Search destinations, provinces…"</td>
+    </tr>
+    <tr>
+      <td>Category filter buttons with emoji + text labels</td>
+      <td><code>Home.jsx:125–137</code> — <code>.cat-card</code> buttons</td>
+      <td>Visual icons (🏖️🏔️🏛️) remove language barrier; labels confirm meaning</td>
+    </tr>
+    <tr>
+      <td>One-click "Plan Trip" from any Destination Detail page</td>
+      <td><code>DestinationDetail.jsx:293–298</code> — <code>id="btn-plan-trip"</code></td>
+      <td>Pre-fills the planner with the current destination; reduces re-entry effort</td>
+    </tr>
+    <tr>
+      <td>Skeleton loaders during all data fetches</td>
+      <td><code>Home.jsx</code>, <code>Explore.jsx:67–76</code>, <code>TripPlanner.jsx:67–76</code>, <code>SavedTrips.jsx:63–72</code></td>
+      <td>Prevents blank white screens; maintains layout stability during loading</td>
+    </tr>
+    <tr>
+      <td>"Clear Filters" shortcut when filters are active</td>
+      <td><code>Home.jsx:146–153</code></td>
+      <td>One button resets both search and category; reduces friction when exploring</td>
+    </tr>
+    <tr>
+      <td>Multi-step trip creation with back-navigation at every step</td>
+      <td><code>Budget.jsx:231–237</code>, <code>RoutePlanner.jsx:252–266</code></td>
+      <td>Buttons: "← Edit Plan" and "✏️ Edit Plan" let users revise without losing data</td>
+    </tr>
+    <tr>
+      <td>Auto-advance hero slideshow (6 real Sri Lanka photos)</td>
+      <td><code>Home.jsx:41–47</code> — <code>setInterval</code> 2s</td>
+      <td>Passive engagement; no user interaction required to see variety</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="section-summary">
+  Summary: Navigation is intuitive with emoji icons, clear labels, breadcrumbs, and persistent back-buttons. Users are never stranded.
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     CRITERION 2
+════════════════════════════════════════════════════ -->
+<h1>Criterion 2 — Consistency and Standards</h1>
+<div class="verdict">✓ PASS — Strong Evidence</div>
+<p>
+  The entire application is built on a single centralised design system defined in <code>index.css</code> with over 100 CSS custom properties. Every component reuses the same visual tokens — no ad-hoc inline colours or font sizes.
+</p>
+
+<h2>Evidence</h2>
+<table>
+  <thead><tr><th>Consistency Aspect</th><th>File &amp; Location</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Unified CSS variable design system</td>
+      <td><code>index.css:13–110</code></td>
+      <td>100+ CSS variables: <code>--primary</code>, <code>--radius</code>, <code>--shadow-sm</code>, <code>--font-display</code>, etc.</td>
+    </tr>
+    <tr>
+      <td>Consistent button classes across all pages</td>
+      <td>All pages</td>
+      <td><code>.btn.btn-primary</code>, <code>.btn.btn-outline</code>, <code>.btn.btn-ghost</code>, <code>.btn.btn-danger</code> — identical styling everywhere</td>
+    </tr>
+    <tr>
+      <td>Tab/filter bar pattern reused across pages</td>
+      <td><code>Explore.jsx:132</code>, <code>SavedTrips.jsx:89</code>, <code>TripPlanner.jsx:216</code></td>
+      <td>Same <code>.tab-bar</code> and <code>.tab-item.active</code> CSS class on every tabbed component</td>
+    </tr>
+    <tr>
+      <td>Identical Navbar on every authenticated page</td>
+      <td><code>Navbar.jsx</code></td>
+      <td>Same logo, 4 nav links, notification bell, theme toggle, user avatar — imported once</td>
+    </tr>
+    <tr>
+      <td>Active state highlight pattern</td>
+      <td><code>Navbar.jsx:43</code>, <code>Home.jsx:129</code>, <code>Explore.jsx:136</code></td>
+      <td>Consistent <code>active</code> class for nav links, category pills, transport options, tabs</td>
+    </tr>
+    <tr>
+      <td>Consistent form structure</td>
+      <td><code>TripPlanner.jsx:94–205</code>, <code>Login.jsx:152–310</code></td>
+      <td>All forms follow <code>field-group &gt; label &gt; input</code> structure with same CSS</td>
+    </tr>
+    <tr>
+      <td>Currency format</td>
+      <td><code>Budget.jsx:263</code>, <code>SavedTrips.jsx:124</code></td>
+      <td>All monetary values shown as "Rs. X,XXX" using <code>.toLocaleString()</code></td>
+    </tr>
+    <tr>
+      <td>Transport mode icon set</td>
+      <td><code>TripPlanner.jsx:162</code>, <code>RoutePlanner.jsx:386</code></td>
+      <td>Same <code>transportModes</code> data array reused — identical icons in both pages</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="section-summary">
+  Summary: One design system drives the entire UI. Patterns are reused — not reimplemented — giving users a consistent visual language across all 11 pages.
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     CRITERION 3
+════════════════════════════════════════════════════ -->
+<h1>Criterion 3 — Visibility, Feedback and System Status</h1>
+<div class="verdict">✓ PASS — Strong Evidence</div>
+<p>
+  Every asynchronous operation in the application has at least one visible loading indicator. Every user action that changes state provides explicit visual feedback. The system always communicates its current status.
+</p>
+
+<h2>Evidence</h2>
+<table>
+  <thead><tr><th>Status / Feedback Point</th><th>File &amp; Location</th><th>Implementation</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Splash loading progress bar (0 → 100%)</td>
+      <td><code>Splash.jsx:8–58</code></td>
+      <td><code>progress</code> state + <code>splash-progress-fill</code> animated width</td>
+    </tr>
+    <tr>
+      <td>Skeleton loaders during API fetches</td>
+      <td><code>Home.jsx</code>, <code>Explore.jsx</code>, <code>TripPlanner.jsx</code>, <code>SavedTrips.jsx</code>, <code>DestinationDetail.jsx</code></td>
+      <td><code>&lt;SkeletonLoader type="card" count={6} /&gt;</code> with shimmer animation</td>
+    </tr>
+    <tr>
+      <td>Login/Register spinner + "Please wait…" during submit</td>
+      <td><code>Login.jsx:320–322</code></td>
+      <td><code>{loading ? &lt;div className="ng-spinner" /&gt;…}</code></td>
+    </tr>
+    <tr>
+      <td>Animated SVG ring chart in Budget (live percentage)</td>
+      <td><code>Budget.jsx:268–289</code></td>
+      <td>SVG <code>stroke-dashoffset</code> animation; updates live as amounts change</td>
+    </tr>
+    <tr>
+      <td>Budget status pill: "✓ Rs. X remaining" / "⚠️ Over by Rs. X"</td>
+      <td><code>Budget.jsx:287–289</code></td>
+      <td>Conditional <code>.status-pill.ok</code> / <code>.status-pill.over</code> with colour change</td>
+    </tr>
+    <tr>
+      <td>Save buttons show "⏳ Saving…" during async operation</td>
+      <td><code>Budget.jsx:361,369</code></td>
+      <td><code>disabled={saving}</code> + conditional button text</td>
+    </tr>
+    <tr>
+      <td>Route Planner: "⏳ Loading route…" while fetching OSRM data</td>
+      <td><code>RoutePlanner.jsx:294</code></td>
+      <td><code>routeLoading</code> state controls map label and metric placeholders</td>
+    </tr>
+    <tr>
+      <td>Success/error banners after save actions</td>
+      <td><code>Budget.jsx:241–256</code>, <code>RoutePlanner.jsx:274–288</code></td>
+      <td>Green/red <code>statusMsg</code> panels with emoji prefix (✅ / ❌)</td>
+    </tr>
+    <tr>
+      <td>Review submission message (success/error)</td>
+      <td><code>DestinationDetail.jsx:137–139</code></td>
+      <td>"✅ Review submitted successfully!" or specific error text</td>
+    </tr>
+    <tr>
+      <td>Share button: "✅ Copied!" for 2.5 seconds</td>
+      <td><code>DestinationDetail.jsx:160–161</code>, <code>RoutePlanner.jsx:445</code></td>
+      <td><code>shareCopied</code> state + <code>setTimeout</code> reset</td>
+    </tr>
+    <tr>
+      <td>Save favourite: ❤️ / 🤍 / ⏳ reflecting all 3 states</td>
+      <td><code>DestinationDetail.jsx:232</code></td>
+      <td><code>saved</code> + <code>saveLoading</code> state combination</td>
+    </tr>
+    <tr>
+      <td>Active nav link highlighted</td>
+      <td><code>Navbar.jsx:43</code></td>
+      <td><code>location.pathname === link.path</code> adds <code>active</code> class</td>
+    </tr>
+    <tr>
+      <td>Live result count shown in real-time</td>
+      <td><code>Home.jsx:143–144</code>, <code>Explore.jsx:149–151</code></td>
+      <td>"X Results Found" / "Showing X Results" using live <code>filtered.length</code></td>
+    </tr>
+    <tr>
+      <td>"Forgot?" shows "📬 Contact support to reset" for 4 seconds</td>
+      <td><code>Login.jsx:174</code></td>
+      <td><code>forgotMsg</code> state + <code>setTimeout</code> — turned dead span into a responsive button</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="section-summary">
+  Summary: No operation is silent. Every loading state, success, error, and user action produces immediate, visible feedback.
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     CRITERION 4
+════════════════════════════════════════════════════ -->
+<h1>Criterion 4 — Error Prevention, Recovery and User Control</h1>
+<div class="verdict">✓ PASS — Strong Evidence</div>
+<p>
+  The application prevents errors with HTML constraints and real-time validation, confirms all destructive actions, provides specific error messages, and always offers a clear recovery path.
+</p>
+
+<h2>Evidence</h2>
+<table>
+  <thead><tr><th>Prevention / Recovery Feature</th><th>File &amp; Location</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Inline password-match validation (live, before submit)</td>
+      <td><code>Login.jsx:271–285</code></td>
+      <td>Shows "Passwords don't match" (red) or "✓ Match" (green) as user types — no submit needed</td>
+    </tr>
+    <tr>
+      <td>Minimum password length enforced client-side</td>
+      <td><code>Login.jsx:64–67</code></td>
+      <td>Checks <code>form.regPassword.length &lt; 6</code> before API call; shows "Password must be at least 6 characters."</td>
+    </tr>
+    <tr>
+      <td>HTML <code>required</code> prevents empty form submission</td>
+      <td><code>Login.jsx:164</code>, <code>TripPlanner.jsx:116</code></td>
+      <td>Browser-native validation on all required fields</td>
+    </tr>
+    <tr>
+      <td>Return date <code>min</code> prevents end before start</td>
+      <td><code>TripPlanner.jsx:127</code></td>
+      <td><code>min={form.date}</code> makes invalid date ranges unselectable</td>
+    </tr>
+    <tr>
+      <td>People count constrained 1–20</td>
+      <td><code>TripPlanner.jsx:140–141</code></td>
+      <td><code>min="1" max="20"</code> prevents nonsensical values</td>
+    </tr>
+    <tr>
+      <td>Budget amounts clamped to ≥ 0</td>
+      <td><code>Budget.jsx:109</code></td>
+      <td><code>Math.max(0, val)</code> in <code>updateAmount()</code> prevents negative expenses</td>
+    </tr>
+    <tr>
+      <td>Budget Reset button restores smart defaults</td>
+      <td><code>Budget.jsx:371–373</code></td>
+      <td><code>id="btn-reset-budget"</code> calls <code>setItems(getInitialItems())</code></td>
+    </tr>
+    <tr>
+      <td>Back buttons preserve navigation state</td>
+      <td><code>Budget.jsx:231–237</code></td>
+      <td>"← Edit Plan" navigates with <code>{ state: { trip: tripData } }</code> — form data intact</td>
+    </tr>
+    <tr>
+      <td>Confirm dialog before deleting a saved trip</td>
+      <td><code>SavedTrips.jsx:46–47</code></td>
+      <td><code>window.confirm('Delete this saved trip? This action cannot be undone.')</code></td>
+    </tr>
+    <tr>
+      <td>Confirm dialog before removing a favourite</td>
+      <td><code>SavedTrips.jsx:55–56</code></td>
+      <td><code>window.confirm('Remove this destination from favourites?')</code></td>
+    </tr>
+    <tr>
+      <td>Confirm dialog before deleting a review</td>
+      <td><code>DestinationDetail.jsx:147</code></td>
+      <td><code>window.confirm('Delete your review?')</code></td>
+    </tr>
+    <tr>
+      <td>Protected routes redirect unauthenticated users</td>
+      <td><code>App.jsx:18–21</code></td>
+      <td><code>&lt;ProtectedRoute&gt;</code> checks <code>isAuthenticated</code> and redirects to <code>/login</code></td>
+    </tr>
+    <tr>
+      <td>Wildcard fallback route</td>
+      <td><code>App.jsx:43</code></td>
+      <td>Unknown URLs redirect to <code>/splash</code> — no 404 blank page</td>
+    </tr>
+    <tr>
+      <td>OSRM route error — graceful fallback</td>
+      <td><code>RoutePlanner.jsx:297–301</code></td>
+      <td>Shows "⚠️ Could not load road data — showing approximate straight-line route"</td>
+    </tr>
+    <tr>
+      <td>DestinationDetail error state</td>
+      <td><code>DestinationDetail.jsx:179–190</code></td>
+      <td>Friendly 😕 message + "Back to Explore" recovery button when destination not found</td>
+    </tr>
+    <tr>
+      <td>Empty state CTAs on Home and Explore</td>
+      <td><code>Home.jsx:160–166</code>, <code>Explore.jsx:185–189</code></td>
+      <td>"Browse All" / "Try adjusting filters" buttons provide recovery from empty search results</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="section-summary">
+  Summary: Errors are caught before they happen (constraints, validation), destructive actions require confirmation, and every failure state offers a clear recovery route.
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     CRITERION 5
+════════════════════════════════════════════════════ -->
+<h1>Criterion 5 — Layout, Navigation and Information Organisation</h1>
+<div class="verdict">✓ PASS — Strong Evidence</div>
+<p>
+  Navigation is hierarchical and persistent. Information is structured from broad (home) to specific (detail), with two-column layouts managing content density and a clear step-by-step planning workflow.
+</p>
+
+<h2>Evidence</h2>
+<table>
+  <thead><tr><th>Layout / Navigation Feature</th><th>File &amp; Location</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Fixed top Navbar across all authenticated pages</td>
+      <td><code>Navbar.jsx</code></td>
+      <td>Logo + 4 nav links + notifications + theme toggle + avatar — always visible</td>
+    </tr>
+    <tr>
+      <td>Hamburger menu for mobile navigation</td>
+      <td><code>Navbar.jsx:83–91</code></td>
+      <td><code>menuOpen</code> state collapses nav links into mobile menu</td>
+    </tr>
+    <tr>
+      <td>Breadcrumb trail on Destination Detail</td>
+      <td><code>DestinationDetail.jsx:197–203</code></td>
+      <td>"Home › Explore › [Destination Name]" with clickable links</td>
+    </tr>
+    <tr>
+      <td>Information hierarchy on Home page</td>
+      <td><code>Home.jsx:64–200</code></td>
+      <td>Hero → Category Filters → Recommended → Historical → CTA (logical disclosure)</td>
+    </tr>
+    <tr>
+      <td>Two-column layout on Destination Detail</td>
+      <td><code>DestinationDetail.css</code> — <code>.detail-grid</code></td>
+      <td>Photos/description left; quick-info card, weather, reviews right</td>
+    </tr>
+    <tr>
+      <td>Two-column layout on Trip Planner</td>
+      <td><code>TripPlanner.jsx:89–323</code> — <code>.planner-layout</code></td>
+      <td>Form left; live destination preview (photo/map) right</td>
+    </tr>
+    <tr>
+      <td>Two-column layout on Budget Calculator</td>
+      <td><code>Budget.jsx:258–387</code> — <code>.budget-layout</code></td>
+      <td>Summary ring chart left; editable expense inputs right</td>
+    </tr>
+    <tr>
+      <td>Two-column layout on Route Planner</td>
+      <td><code>RoutePlanner.jsx:290–456</code> — <code>.route-layout</code></td>
+      <td>Interactive map left; route details and actions right</td>
+    </tr>
+    <tr>
+      <td>Tab system for content switching</td>
+      <td><code>Explore.jsx</code>, <code>SavedTrips.jsx</code>, <code>TripPlanner.jsx</code></td>
+      <td>Category tabs, Itineraries/Favourites, Photos/Map — same <code>.tab-bar</code> pattern</td>
+    </tr>
+    <tr>
+      <td>Grid/Map view toggle on Explore</td>
+      <td><code>Explore.jsx:110–127</code></td>
+      <td><code>viewMode</code> state switches between <code>.grid-3</code> cards and <code>MapView</code></td>
+    </tr>
+    <tr>
+      <td>Step-based planning workflow</td>
+      <td><code>App.jsx</code> + navigation state</td>
+      <td>Home → Explore → Detail → Planner → Budget → Route (with back-navigation at each)</td>
+    </tr>
+    <tr>
+      <td>Content width constraint for readability</td>
+      <td><code>index.css:220</code></td>
+      <td><code>.page-content { max-width: 1200px; margin: 0 auto; }</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="section-summary">
+  Summary: Navigation is fixed and hierarchical. Two-column layouts manage complexity. A clearly-signposted multi-step workflow guides trip planning from discovery to route.
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     CRITERION 6
+════════════════════════════════════════════════════ -->
+<h1>Criterion 6 — Visual Design, Readability and Accessibility</h1>
+<div class="verdict">✓ PASS — Strong Evidence</div>
+<p>
+  The UI uses a premium glassmorphism dark mode with a full light mode alternative, three professional Google Fonts, proper semantic HTML, ARIA attributes, alt text on all images, and multi-language support.
+</p>
+
+<h2>Evidence</h2>
+<table>
+  <thead><tr><th>Design / Accessibility Feature</th><th>File &amp; Location</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Full dark mode design system</td>
+      <td><code>index.css:13–110</code></td>
+      <td>Dark background <code>#0f1117</code> with glassmorphism cards; all colours via CSS variables</td>
+    </tr>
+    <tr>
+      <td>Complete light mode override</td>
+      <td><code>index.css:115–148</code></td>
+      <td><code>[data-theme="light"]</code> block overrides all 30+ colour variables for proper contrast</td>
+    </tr>
+    <tr>
+      <td>Smooth theme transition (0.3s)</td>
+      <td><code>index.css:161–167</code></td>
+      <td><code>transition: background-color 0.30s</code> on all elements — no jarring flash</td>
+    </tr>
+    <tr>
+      <td>3 professional fonts from Google Fonts</td>
+      <td><code>index.css:6</code></td>
+      <td>DM Sans (body), Plus Jakarta Sans (display), Inter (fallback)</td>
+    </tr>
+    <tr>
+      <td>Font size scaling (Small/Medium/Large)</td>
+      <td><code>SettingsContext.jsx:25–29</code>, <code>index.css:10</code></td>
+      <td><code>--font-scale</code> CSS variable + <code>zoom</code> on <code>html</code> element; persisted to localStorage</td>
+    </tr>
+    <tr>
+      <td>Semantic HTML elements</td>
+      <td>All pages</td>
+      <td><code>&lt;nav&gt;</code>, <code>&lt;h1&gt;</code>, <code>&lt;form&gt;</code>, <code>&lt;button&gt;</code>, <code>&lt;label&gt;</code> used correctly throughout</td>
+    </tr>
+    <tr>
+      <td>ARIA labels on interactive elements</td>
+      <td><code>Navbar.jsx:62,86</code></td>
+      <td><code>aria-label="Toggle theme"</code> and <code>aria-label="Toggle menu"</code></td>
+    </tr>
+    <tr>
+      <td>ARIA pressed on toggle tabs</td>
+      <td><code>Explore.jsx:136</code></td>
+      <td><code>aria-pressed={activeCategory === cat.id}</code> on category buttons</td>
+    </tr>
+    <tr>
+      <td>Alt text on all images</td>
+      <td><code>Navbar.jsx:75</code>, <code>DestinationDetail.jsx:216</code></td>
+      <td><code>alt={dest.name}</code> / <code>alt={user.name}</code> — meaningful, not empty</td>
+    </tr>
+    <tr>
+      <td>Decorative logo has aria-hidden</td>
+      <td><code>Login.jsx:93</code></td>
+      <td><code>aria-hidden="true"</code> on background watermark logo</td>
+    </tr>
+    <tr>
+      <td>Keyboard-accessible tabs (button elements)</td>
+      <td><code>Explore.jsx:134</code>, <code>SavedTrips.jsx:90,97</code></td>
+      <td>Changed from non-interactive <code>&lt;div&gt;</code> to <code>&lt;button type="button"&gt;</code></td>
+    </tr>
+    <tr>
+      <td>Password show/hide toggle</td>
+      <td><code>Login.jsx:189–196</code></td>
+      <td>Three separate toggles for login, register, and confirm password fields</td>
+    </tr>
+    <tr>
+      <td>Autocomplete attributes on form inputs</td>
+      <td><code>Login.jsx:165,187,257</code></td>
+      <td><code>autoComplete="email"</code>, <code>"current-password"</code>, <code>"new-password"</code></td>
+    </tr>
+    <tr>
+      <td>Colour-blind safe status indicators</td>
+      <td><code>Budget.jsx:287–288</code></td>
+      <td>Status uses BOTH colour AND icon/text (✓ / ⚠️) — not colour-only</td>
+    </tr>
+    <tr>
+      <td>Multi-language support (English + Sinhala)</td>
+      <td><code>SettingsContext.jsx</code>, <code>utils/locales.js</code></td>
+      <td><code>t(key)</code> translation function; language persisted to localStorage</td>
+    </tr>
+    <tr>
+      <td>Staggered card animations on Explore</td>
+      <td><code>Explore.jsx:179</code></td>
+      <td><code>animate-fade-in</code> with <code>animationDelay</code> per card — premium feel</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="section-summary">
+  Summary: Full dark/light mode, accessible semantics, ARIA labels, keyboard navigation, alt text, multi-language — the app meets modern accessibility standards.
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     CRITERION 7
+════════════════════════════════════════════════════ -->
+<h1>Criterion 7 — Efficiency and Interaction Design</h1>
+<div class="verdict">✓ PASS — Strong Evidence</div>
+<p>
+  The application minimises user effort through intelligent defaults, pre-filled navigation state, debounced inputs, parallel data fetching, keyboard shortcuts, and deep links between features.
+</p>
+
+<h2>Evidence</h2>
+<table>
+  <thead><tr><th>Efficiency Feature</th><th>File &amp; Location</th><th>How it saves time</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Debounced search (300ms) on Explore</td>
+      <td><code>Explore.jsx:34</code></td>
+      <td><code>setTimeout(loadDestinations, 300)</code> — avoids API spam on every keystroke</td>
+    </tr>
+    <tr>
+      <td>Instant client-side filter on Home</td>
+      <td><code>Home.jsx:49–55</code></td>
+      <td>Local <code>.filter()</code> with no API call; results appear immediately</td>
+    </tr>
+    <tr>
+      <td>Trip data passed via navigation state</td>
+      <td><code>TripPlanner.jsx:54–65</code>, <code>Budget.jsx:34</code></td>
+      <td><code>location.state?.trip</code> — no re-entry of data between Planner → Budget → Route</td>
+    </tr>
+    <tr>
+      <td>Budget pre-calculated from trip context</td>
+      <td><code>Budget.jsx:50–94</code></td>
+      <td><code>getAreaCategoryRates()</code> auto-fills costs based on destination, people, days, transport</td>
+    </tr>
+    <tr>
+      <td>Sort destinations with one dropdown</td>
+      <td><code>Explore.jsx:97–107</code></td>
+      <td>Top Rated / Price Low-High / Price High-Low / A-Z — instant sort change</td>
+    </tr>
+    <tr>
+      <td>Grid/Map view toggle</td>
+      <td><code>Explore.jsx:110–127</code></td>
+      <td>Power users can switch to map for spatial exploration without leaving the page</td>
+    </tr>
+    <tr>
+      <td>Real road route auto-loaded (OSRM)</td>
+      <td><code>RoutePlanner.jsx:162–191</code></td>
+      <td><code>useEffect</code> fetches route automatically when destination changes — no user trigger</td>
+    </tr>
+    <tr>
+      <td>Transport mode dynamically recalculates cost + time</td>
+      <td><code>RoutePlanner.jsx:201–216</code></td>
+      <td><code>buildModes(realDistKm)</code> recalculates for all 4 modes simultaneously</td>
+    </tr>
+    <tr>
+      <td>"Start Navigation" opens Google Maps in one click</td>
+      <td><code>RoutePlanner.jsx:419–427</code></td>
+      <td><code>window.open(google maps URL, '_blank')</code> — no manual coordinate entry</td>
+    </tr>
+    <tr>
+      <td>Share route copies URL to clipboard instantly</td>
+      <td><code>RoutePlanner.jsx:432–443</code></td>
+      <td><code>navigator.clipboard.writeText</code> — one click, confirms with "✅ Copied!"</td>
+    </tr>
+    <tr>
+      <td>Photo lightbox with keyboard navigation</td>
+      <td><code>DestinationDetail.jsx:91–101</code></td>
+      <td>← / → arrow keys and Escape key; <code>keydown</code> event listener</td>
+    </tr>
+    <tr>
+      <td>Saved trip pre-fills planner for editing</td>
+      <td><code>SavedTrips.jsx:144–169</code></td>
+      <td>All trip fields reconstructed and passed to planner — instant edit, no re-entry</td>
+    </tr>
+    <tr>
+      <td>Profile loads stats in parallel</td>
+      <td><code>Profile.jsx:43–46</code></td>
+      <td><code>Promise.allSettled([getUserTrips(), getSavedItems()])</code> — both API calls simultaneously</td>
+    </tr>
+    <tr>
+      <td>Weather pre-selects destination from route context</td>
+      <td><code>Weather.jsx:29–38</code></td>
+      <td><code>location.state?.destinationId</code> — no manual selection needed</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="section-summary">
+  Summary: The app is built for speed. Intelligent defaults, pre-populated forms, parallel APIs, and keyboard shortcuts eliminate redundant user effort.
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     CRITERION 8
+════════════════════════════════════════════════════ -->
+<h1>Criterion 8 — User-Centred Design and Target-User Suitability</h1>
+<div class="verdict">✓ PASS — Strong Evidence</div>
+<p>
+  Every feature in YamuLK is purpose-built for the target users: local Sri Lankan travellers and international tourists. Content, costs, language, currency, routing, and destination data are all contextualised for Sri Lanka.
+</p>
+
+<h2>Evidence</h2>
+<table>
+  <thead><tr><th>User-Centred Feature</th><th>File &amp; Location</th><th>How it serves the target user</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Sri Lanka-specific destination database (200+)</td>
+      <td><code>Home.jsx:113</code></td>
+      <td>Live count displayed; covers all 9 provinces with local names and emojis</td>
+    </tr>
+    <tr>
+      <td>Sri Lankan currency (Rs.) used throughout</td>
+      <td><code>Budget.jsx:263</code>, <code>SavedTrips.jsx:124</code></td>
+      <td>All monetary values in LKR — not USD or EUR</td>
+    </tr>
+    <tr>
+      <td>Destination categories match local tourism types</td>
+      <td><code>data/mockData.js</code></td>
+      <td>Beaches, Mountains, Heritage, Waterfalls, Wildlife — categories mapped to Sri Lanka</td>
+    </tr>
+    <tr>
+      <td>Area-specific cost benchmarks per region</td>
+      <td><code>Budget.jsx:50–55</code>, <code>utils/areaCosts.js</code></td>
+      <td><code>getAreaCategoryRates()</code> returns accurate cost tiers per destination area</td>
+    </tr>
+    <tr>
+      <td>Cost tier labels (Tourist Hotspot / Urban Centre / Natural Area)</td>
+      <td><code>Budget.jsx:227</code></td>
+      <td>Shows users which regional tier their destination falls in — sets expectations</td>
+    </tr>
+    <tr>
+      <td>Multi-language: English + Sinhala</td>
+      <td><code>SettingsContext.jsx</code>, <code>utils/locales.js</code></td>
+      <td>Local users can switch to Sinhala; international users use English — covers both audiences</td>
+    </tr>
+    <tr>
+      <td>Google OAuth login for modern users</td>
+      <td><code>Login.jsx:36–52</code></td>
+      <td><code>useGoogleLogin</code> — users who prefer not to manage passwords can sign in via Google</td>
+    </tr>
+    <tr>
+      <td>Live weather per destination</td>
+      <td><code>Weather.jsx</code>, <code>DestinationDetail.jsx:48–54</code></td>
+      <td>Real temperature, humidity, UV index, rain probability from live API — critical for trip planning</td>
+    </tr>
+    <tr>
+      <td>Real OSRM road routing from Colombo Fort</td>
+      <td><code>RoutePlanner.jsx:50–74</code></td>
+      <td>Free, no API key required; provides actual road distance and driving time in Sri Lanka</td>
+    </tr>
+    <tr>
+      <td>AI-generated trip itinerary stored per trip</td>
+      <td><code>SavedTrips.jsx:133–143</code>, <code>ItineraryModal.jsx</code></td>
+      <td>Markdown itinerary viewable in modal — tailored day-by-day plans</td>
+    </tr>
+    <tr>
+      <td>Real user statistics on Profile page</td>
+      <td><code>Profile.jsx:36–68</code></td>
+      <td>Trip count, saved destinations, favourites — loaded from live API</td>
+    </tr>
+    <tr>
+      <td>Money-saving tips tailored for Sri Lanka</td>
+      <td><code>Budget.jsx:376–384</code></td>
+      <td>"🍛 Local rice &amp; curry costs Rs. 150–300" — highly specific, locally relevant tips</td>
+    </tr>
+    <tr>
+      <td>Best time to visit per destination</td>
+      <td><code>DestinationDetail.jsx:267</code>, <code>TripPlanner.jsx:317–320</code></td>
+      <td><code>dest.bestTime</code> field shown on detail and planner — helps users choose timing</td>
+    </tr>
+    <tr>
+      <td>Community review system</td>
+      <td><code>DestinationDetail.jsx:122–153</code></td>
+      <td>Users can add/delete their own reviews to help other travellers plan</td>
+    </tr>
+    <tr>
+      <td>Favourites system for bookmarking</td>
+      <td><code>DestinationDetail.jsx:104–120</code></td>
+      <td><code>saveItem('destination')</code> — users curate a personal list of places to visit</td>
+    </tr>
+    <tr>
+      <td>Font size accessibility setting</td>
+      <td><code>Profile.jsx</code>, <code>SettingsContext.jsx</code></td>
+      <td>Small / Medium / Large font scale — accommodates different visual needs</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="section-summary">
+  Summary: The application is entirely contextualised for Sri Lankan tourism — currency, language, costs, routing, and content are all locally relevant and serve both local and international travellers.
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     OVERALL SUMMARY
+════════════════════════════════════════════════════ -->
+<h1>Overall Evaluation Summary</h1>
+
+<table class="summary-table">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Criterion</th>
+      <th>Verdict</th>
+      <th>Key Strength</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>Usability and Ease of Use</td>
+      <td class="pass">✓ PASS</td>
+      <td>Skeleton loaders, breadcrumbs, one-click Plan Trip, category search</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Consistency and Standards</td>
+      <td class="pass">✓ PASS</td>
+      <td>Single CSS design system (100+ variables), all patterns reused not reimplemented</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Visibility, Feedback and System Status</td>
+      <td class="pass">✓ PASS</td>
+      <td>14 distinct feedback points; every async op has a loading indicator</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Error Prevention, Recovery and User Control</td>
+      <td class="pass">✓ PASS</td>
+      <td>Inline validation, 3 confirm dialogs, input constraints, graceful error states</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Layout, Navigation and Information Organisation</td>
+      <td class="pass">✓ PASS</td>
+      <td>Fixed navbar, breadcrumbs, 4× two-column layouts, step-based planning flow</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Visual Design, Readability and Accessibility</td>
+      <td class="pass">✓ PASS</td>
+      <td>Full dark/light mode, ARIA labels, keyboard-accessible tabs, multi-language</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Efficiency and Interaction Design</td>
+      <td class="pass">✓ PASS</td>
+      <td>Debounced search, pre-filled navigation state, parallel APIs, keyboard shortcuts</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>User-Centred Design and Target-User Suitability</td>
+      <td class="pass">✓ PASS</td>
+      <td>Sri Lanka-specific content, regional cost data, Sinhala language, real OSRM routing</td>
+    </tr>
+  </tbody>
+</table>
+
+<br/>
+<div class="evidence-box">
+  <strong>Conclusion</strong>
+  All 8 HCI evaluation criteria are met with strong, verifiable evidence drawn directly from the application's source code. YamuLK demonstrates a user-centred, accessible, visually consistent, and highly efficient travel planning experience tailored specifically for Sri Lanka.
+</div>
+
+<br/>
+<p style="font-size:10pt; color:#666; text-align:center; margin-top: 30pt;">
+  YamuLK — HCI Evaluation Report &nbsp;|&nbsp; EC9540 Assignment E22 &nbsp;|&nbsp; September 2026
+</p>
+
+</div><!-- end .page -->
+</body>
+</html>

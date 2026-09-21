@@ -128,18 +128,20 @@ export default function Explore() {
           </div>
         </div>
 
-        {/* Category tabs */}
+        {/* Category tabs — using <button> for keyboard accessibility (Criterion 6) */}
         <div className="tab-bar" style={{ display: 'inline-flex', marginBottom: 32, flexWrap: 'wrap', background: 'var(--bg-surface)' }}>
           {categories.map(cat => (
-            <div
+            <button
               key={cat.id}
+              type="button"
               className={`tab-item ${activeCategory === cat.id ? 'active' : ''}`}
               onClick={() => setActiveCategory(cat.id)}
               style={{ minWidth: 225 }}
+              aria-pressed={activeCategory === cat.id}
             >
               <span style={{ fontSize: 16, marginRight: 6 }}>{cat.emoji}</span>
               {cat.label}
-            </div>
+            </button>
           ))}
         </div>
 

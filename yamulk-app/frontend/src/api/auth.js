@@ -19,3 +19,13 @@ export async function googleAuth({ access_token }) {
 export async function updateUserProfile(payload) {
   return api.patch('/user/updateProfile', payload);
 }
+
+// POST /user/forgotPassword — Send password reset email
+export async function forgotPassword(email) {
+  return api.post('/user/forgotPassword', { email });
+}
+
+// POST /user/resetPassword — Submit new password with reset token
+export async function resetPassword(token, newPassword) {
+  return api.post('/user/resetPassword', { token, newPassword });
+}

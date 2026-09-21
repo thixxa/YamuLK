@@ -23,6 +23,15 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
       select: false,
     },
+    // ── Password Reset ──────────────────────────────────────────────────
+    resetPasswordToken: {
+      type: String,
+      select: false, // never returned in normal queries
+    },
+    resetPasswordExpires: {
+      type: Date,
+      select: false,
+    },
   },
   {
     timestamps: true,
