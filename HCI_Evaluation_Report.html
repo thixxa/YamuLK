@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>YamuLK — HCI Evaluation Report | EC9540 Assignment E22</title>
+<title>YamuLK</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
 
@@ -173,26 +173,7 @@
      COVER PAGE
 ════════════════════════════════════════════════════ -->
 <div class="cover">
-  <p class="uni">University</p>
-  <p class="module">EC9540 — Human-Computer Interaction</p>
-  <p class="assignment">Assignment E22 — Formative Evaluation</p>
-  <hr style="margin: 20pt auto; width: 60%; border-top: 2px solid #000;" />
-
-  <div class="report-title">HCI Evaluation Report</div>
-  <div class="app-name">YamuLK — Sri Lanka Travel Application</div>
-  <div class="tagline">"Explore Sri Lanka, Your Way"</div>
-
-  <table class="meta-table">
-    <tr><td>Application</td><td>YamuLK</td></tr>
-    <tr><td>Technology Stack</td><td>React + Vite (Frontend) · Node.js + MongoDB (Backend)</td></tr>
-    <tr><td>Evaluation Type</td><td>Code-Based HCI Review</td></tr>
-    <tr><td>Evaluation Date</td><td>September 2026</td></tr>
-    <tr><td>No. of Pages Reviewed</td><td>11 pages + 10 components</td></tr>
-    <tr><td>No. of Criteria Evaluated</td><td>8</td></tr>
-    <tr><td>Overall Verdict</td><td><strong style="color:#1a7a3a;">✓ All 8 Criteria Passed</strong></td></tr>
-  </table>
-
-  <p class="date">Date: September 21, 2026</p>
+  <div class="app-name">YamuLK</div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════
@@ -244,7 +225,6 @@
      CRITERION 1
 ════════════════════════════════════════════════════ -->
 <h1>Criterion 1 — Usability and Ease of Use</h1>
-<div class="verdict">✓ PASS — Strong Evidence</div>
 <p>
   The application is designed around the principle of <em>recognition over recall</em>. Users are guided from entry to action through progressive disclosure — splash screen → login → home → explore → plan → budget → route — with no dead ends and minimal cognitive load at each step.
 </p>
@@ -304,7 +284,6 @@
      CRITERION 2
 ════════════════════════════════════════════════════ -->
 <h1>Criterion 2 — Consistency and Standards</h1>
-<div class="verdict">✓ PASS — Strong Evidence</div>
 <p>
   The entire application is built on a single centralised design system defined in <code>index.css</code> with over 100 CSS custom properties. Every component reuses the same visual tokens — no ad-hoc inline colours or font sizes.
 </p>
@@ -364,7 +343,6 @@
      CRITERION 3
 ════════════════════════════════════════════════════ -->
 <h1>Criterion 3 — Visibility, Feedback and System Status</h1>
-<div class="verdict">✓ PASS — Strong Evidence</div>
 <p>
   Every asynchronous operation in the application has at least one visible loading indicator. Every user action that changes state provides explicit visual feedback. The system always communicates its current status.
 </p>
@@ -454,7 +432,6 @@
      CRITERION 4
 ════════════════════════════════════════════════════ -->
 <h1>Criterion 4 — Error Prevention, Recovery and User Control</h1>
-<div class="verdict">✓ PASS — Strong Evidence</div>
 <p>
   The application prevents errors with HTML constraints and real-time validation, confirms all destructive actions, provides specific error messages, and always offers a clear recovery path.
 </p>
@@ -554,7 +531,6 @@
      CRITERION 5
 ════════════════════════════════════════════════════ -->
 <h1>Criterion 5 — Layout, Navigation and Information Organisation</h1>
-<div class="verdict">✓ PASS — Strong Evidence</div>
 <p>
   Navigation is hierarchical and persistent. Information is structured from broad (home) to specific (detail), with two-column layouts managing content density and a clear step-by-step planning workflow.
 </p>
@@ -634,7 +610,6 @@
      CRITERION 6
 ════════════════════════════════════════════════════ -->
 <h1>Criterion 6 — Visual Design, Readability and Accessibility</h1>
-<div class="verdict">✓ PASS — Strong Evidence</div>
 <p>
   The UI uses a premium glassmorphism dark mode with a full light mode alternative, three professional Google Fonts, proper semantic HTML, ARIA attributes, alt text on all images, and multi-language support.
 </p>
@@ -734,7 +709,6 @@
      CRITERION 7
 ════════════════════════════════════════════════════ -->
 <h1>Criterion 7 — Efficiency and Interaction Design</h1>
-<div class="verdict">✓ PASS — Strong Evidence</div>
 <p>
   The application minimises user effort through intelligent defaults, pre-filled navigation state, debounced inputs, parallel data fetching, keyboard shortcuts, and deep links between features.
 </p>
@@ -824,7 +798,6 @@
      CRITERION 8
 ════════════════════════════════════════════════════ -->
 <h1>Criterion 8 — User-Centred Design and Target-User Suitability</h1>
-<div class="verdict">✓ PASS — Strong Evidence</div>
 <p>
   Every feature in YamuLK is purpose-built for the target users: local Sri Lankan travellers and international tourists. Content, costs, language, currency, routing, and destination data are all contextualised for Sri Lanka.
 </p>
@@ -930,7 +903,6 @@
     <tr>
       <th>#</th>
       <th>Criterion</th>
-      <th>Verdict</th>
       <th>Key Strength</th>
     </tr>
   </thead>
@@ -938,49 +910,41 @@
     <tr>
       <td>1</td>
       <td>Usability and Ease of Use</td>
-      <td class="pass">✓ PASS</td>
       <td>Skeleton loaders, breadcrumbs, one-click Plan Trip, category search</td>
     </tr>
     <tr>
       <td>2</td>
       <td>Consistency and Standards</td>
-      <td class="pass">✓ PASS</td>
       <td>Single CSS design system (100+ variables), all patterns reused not reimplemented</td>
     </tr>
     <tr>
       <td>3</td>
       <td>Visibility, Feedback and System Status</td>
-      <td class="pass">✓ PASS</td>
       <td>14 distinct feedback points; every async op has a loading indicator</td>
     </tr>
     <tr>
       <td>4</td>
       <td>Error Prevention, Recovery and User Control</td>
-      <td class="pass">✓ PASS</td>
       <td>Inline validation, 3 confirm dialogs, input constraints, graceful error states</td>
     </tr>
     <tr>
       <td>5</td>
       <td>Layout, Navigation and Information Organisation</td>
-      <td class="pass">✓ PASS</td>
       <td>Fixed navbar, breadcrumbs, 4× two-column layouts, step-based planning flow</td>
     </tr>
     <tr>
       <td>6</td>
       <td>Visual Design, Readability and Accessibility</td>
-      <td class="pass">✓ PASS</td>
       <td>Full dark/light mode, ARIA labels, keyboard-accessible tabs, multi-language</td>
     </tr>
     <tr>
       <td>7</td>
       <td>Efficiency and Interaction Design</td>
-      <td class="pass">✓ PASS</td>
       <td>Debounced search, pre-filled navigation state, parallel APIs, keyboard shortcuts</td>
     </tr>
     <tr>
       <td>8</td>
       <td>User-Centred Design and Target-User Suitability</td>
-      <td class="pass">✓ PASS</td>
       <td>Sri Lanka-specific content, regional cost data, Sinhala language, real OSRM routing</td>
     </tr>
   </tbody>
@@ -991,11 +955,6 @@
   <strong>Conclusion</strong>
   All 8 HCI evaluation criteria are met with strong, verifiable evidence drawn directly from the application's source code. YamuLK demonstrates a user-centred, accessible, visually consistent, and highly efficient travel planning experience tailored specifically for Sri Lanka.
 </div>
-
-<br/>
-<p style="font-size:10pt; color:#666; text-align:center; margin-top: 30pt;">
-  YamuLK — HCI Evaluation Report &nbsp;|&nbsp; EC9540 Assignment E22 &nbsp;|&nbsp; September 2026
-</p>
 
 </div><!-- end .page -->
 </body>

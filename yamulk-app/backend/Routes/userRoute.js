@@ -8,11 +8,11 @@ import {
   forgotPassword,
   resetPassword,
 } from "../Controllers/userController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const userRouter = express.Router();
 
-userRouter.get("/", protect, getUsers);
+userRouter.get("/", protect, adminOnly, getUsers);
 userRouter.post("/", login);
 userRouter.post("/register", register);
 userRouter.post("/google", googleLogin);

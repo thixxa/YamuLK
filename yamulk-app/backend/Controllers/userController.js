@@ -46,7 +46,7 @@ export async function login(req, res) {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json({ message: "Login success", token: token, user: { name: user.name, email: user.email } });
+    return res.status(200).json({ message: "Login success", token: token, user: { name: user.name, email: user.email, createdAt: user.createdAt } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "login error", error });
@@ -178,7 +178,7 @@ export async function googleLogin(req, res) {
     return res.status(200).json({
       message: "Google login successful",
       token,
-      user: { name: user.name, email: user.email },
+      user: { name: user.name, email: user.email, createdAt: user.createdAt },
     });
   } catch (error) {
     console.error("googleLogin error:", error);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { createTrip, updateTrip } from '../api/trips.js';
@@ -99,6 +99,9 @@ export default function Budget() {
   const [savedTripId, setSavedTripId] = useState(tripData?.tripId || null); // prefill for edit
   const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
 
+  // Lock to prevent duplicate trip creation when two buttons are clicked in quick succession (B2 fix)
+  const tripCreationRef = useRef({ inProgress: false, promise: null });
+
   const totalSpend = items.reduce((sum, item) => sum + item.amount, 0);
   const remaining = totalBudget - totalSpend;
   const percent = Math.min(Math.round((totalSpend / totalBudget) * 100), 100);
@@ -123,32 +126,48 @@ export default function Budget() {
   });
 
   // ── Core: create OR update the trip + budget + saved record ───────────────────
+  // Uses a ref-based lock so concurrent button clicks never create two Trip documents.
   const createAndSaveTrip = async () => {
-    const destId = tripData.destinationData?._id || tripData.destination;
-    const transportMode = TRANSPORT_MAP[tripData.transport?.toLowerCase()] || 'Other';
-    const tripPayload = {
-      destinationId:     destId,
-      travelDate:        tripData.date   || new Date().toISOString(),
-      returnDate:        tripData.endDate || new Date(Date.now() + 86400000).toISOString(),
-      people:            tripData.people,
-      transportMode,
-      accommodationType: tripData.accommodation,
-      totalBudget:       totalBudget,
-      specialNotes:      tripData.notes || '',
+    // If a creation is already in-flight, reuse that same promise instead of starting a new one
+    if (tripCreationRef.current.inProgress) {
+      return tripCreationRef.current.promise;
+    }
+
+    const doCreate = async () => {
+      const destId = tripData.destinationData?._id || tripData.destination;
+      const transportMode = TRANSPORT_MAP[tripData.transport?.toLowerCase()] || 'Other';
+      const tripPayload = {
+        destinationId:     destId,
+        travelDate:        tripData.date   || new Date().toISOString(),
+        returnDate:        tripData.endDate || new Date(Date.now() + 86400000).toISOString(),
+        people:            tripData.people,
+        transportMode,
+        accommodationType: tripData.accommodation,
+        totalBudget:       totalBudget,
+        specialNotes:      tripData.notes || '',
+      };
+
+      let tripId = tripData.tripId; // editing an existing trip?
+      if (tripId) {
+        // Edit mode — patch the existing trip document
+        await updateTrip(tripId, tripPayload);
+      } else {
+        // New trip — create and add to saved items
+        const tripRes = await createTrip(tripPayload);
+        tripId = tripRes.trip._id;
+        await saveItem('trip', tripId);
+      }
+      await updateBudget(tripId, buildBudgetPayload());
+      return tripId;
     };
 
-    let tripId = tripData.tripId; // editing an existing trip?
-    if (tripId) {
-      // Edit mode — patch the existing trip document
-      await updateTrip(tripId, tripPayload);
-    } else {
-      // New trip — create and add to saved items
-      const tripRes = await createTrip(tripPayload);
-      tripId = tripRes.trip._id;
-      await saveItem('trip', tripId);
-    }
-    await updateBudget(tripId, buildBudgetPayload());
-    return tripId;
+    tripCreationRef.current.inProgress = true;
+    tripCreationRef.current.promise = doCreate().finally(() => {
+      tripCreationRef.current.inProgress = false;
+      tripCreationRef.current.promise = null;
+    });
+
+    return tripCreationRef.current.promise;
   };
 
   // ── "Save Plan" button handler ──────────────────────────────────────────

@@ -33,3 +33,13 @@ export async function protect(req, res, next) {
   }
 }
 
+/**
+ * adminOnly — must be chained AFTER protect.
+ * Returns 403 Forbidden if the authenticated user is not an admin.
+ */
+export function adminOnly(req, res, next) {
+  if (req.user?.role !== 'admin') {
+    return res.status(403).json({ message: "Forbidden: admin access required" });
+  }
+  return next();
+}

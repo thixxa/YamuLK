@@ -39,11 +39,11 @@ export default function Home() {
     loadDestinations();
   }, []);
 
-  // Auto-advance hero slide every 2 seconds
+  // Auto-advance hero slide every 4.5 seconds
   useEffect(() => {
     const timer = setInterval(() => {
       setSlideIndex(i => (i + 1) % HOME_SLIDES.length);
-    }, 2000);
+    }, 4500);
     return () => clearInterval(timer);
   }, []);
 

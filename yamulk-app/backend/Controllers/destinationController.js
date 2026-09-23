@@ -19,9 +19,10 @@ export async function searchDestinations(req, res) {
       .limit(50);
 
     if (destinations.length === 0) {
-      return res.status(404).json({
+      return res.status(200).json({
         message: "No destinations found",
         destinations: [],
+        count: 0,
       });
     }
 

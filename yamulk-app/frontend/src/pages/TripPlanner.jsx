@@ -4,6 +4,8 @@ import Navbar from '../components/Navbar';
 import MapView from '../components/MapView';
 import { transportModes, destinations as mockDestinations } from '../data/mockData';
 import { searchDestinations } from '../api/destinations.js';
+import { getWeather } from '../api/weather.js';
+import { getWeatherEmoji } from '../utils/weatherUtils.js';
 import { useSettings } from '../context/SettingsContext.jsx';
 import SkeletonLoader from '../components/SkeletonLoader';
 import './TripPlanner.css';
@@ -30,6 +32,10 @@ export default function TripPlanner() {
   });
   const [previewTab, setPreviewTab] = useState('photo'); // 'photo' | 'map'
 
+  // Live weather for the selected destination
+  const [liveWeather, setLiveWeather] = useState(null);   // { temp, emoji, condition }
+  const [weatherLoading, setWeatherLoading] = useState(false);
+
   useEffect(() => {
     async function loadDests() {
       try {
@@ -50,6 +56,27 @@ export default function TripPlanner() {
 
   const selectedDest = destinations.find(d => d._id === form.destination) || destinations[0];
   const editingTripId = existingTrip?.tripId || null; // present when editing from SavedTrips
+
+  // Fetch live weather whenever the selected destination changes
+  useEffect(() => {
+    if (!selectedDest?._id) return;
+    let cancelled = false;
+    setWeatherLoading(true);
+    setLiveWeather(null);
+    getWeather(selectedDest._id)
+      .then(res => {
+        if (cancelled) return;
+        const cw = res.currentWeather;
+        setLiveWeather({
+          temp: Math.round(cw.temperature),
+          emoji: getWeatherEmoji(cw.weatherCode),
+          condition: res.forecast?.[0]?.weather || 'Clear sky',
+        });
+      })
+      .catch(() => { if (!cancelled) setLiveWeather(null); })
+      .finally(() => { if (!cancelled) setWeatherLoading(false); });
+    return () => { cancelled = true; };
+  }, [selectedDest?._id]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -292,18 +319,29 @@ export default function TripPlanner() {
                 <p className="text-muted text-sm">{selectedDest.province}</p>
 
                 <div className="preview-stats">
+                  {/* Real rating from DB averageRating */}
                   <div className="preview-stat">
-                    <span className="preview-stat-val">⭐ {selectedDest.averageRating ?? selectedDest.rating ?? 0}</span>
+                    <span className="preview-stat-val">⭐ {(selectedDest.averageRating ?? selectedDest.rating ?? 0).toFixed(1)}</span>
                     <span className="preview-stat-lbl">{t('rating')}</span>
                   </div>
+                  {/* Live weather from open-meteo via backend */}
                   <div className="preview-stat">
-                    <span className="preview-stat-val">Rs. {(selectedDest.estimatedCost ?? selectedDest.costPerDay ?? 0).toLocaleString()}</span>
-                    <span className="preview-stat-lbl">{t('perDay').replace('/', '')}</span>
-                  </div>
-                  <div className="preview-stat">
-                    <span className="preview-stat-val">{selectedDest.weather?.emoji || '☀️'} {selectedDest.weather?.temp || '28'}°C</span>
+                    {weatherLoading ? (
+                      <span className="preview-stat-val" style={{ fontSize: 13, opacity: 0.6 }}>⏳ Loading…</span>
+                    ) : liveWeather ? (
+                      <span className="preview-stat-val">{liveWeather.emoji} {liveWeather.temp}°C</span>
+                    ) : (
+                      <span className="preview-stat-val" style={{ opacity: 0.5 }}>— °C</span>
+                    )}
                     <span className="preview-stat-lbl">{t('weather')}</span>
                   </div>
+                  {/* Live weather condition label */}
+                  {liveWeather && (
+                    <div className="preview-stat">
+                      <span className="preview-stat-val" style={{ fontSize: 12 }}>{liveWeather.condition}</span>
+                      <span className="preview-stat-lbl">Condition</span>
+                    </div>
+                  )}
                 </div>
 
                 <p className="preview-desc">{selectedDest.description?.slice(0, 120)}...</p>

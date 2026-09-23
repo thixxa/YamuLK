@@ -181,7 +181,12 @@ export default function Profile() {
               <span>🌿</span>
               <div>
                 <div className="font-semibold" style={{ fontSize: 13 }}>YamuLK Explorer</div>
-                <div className="text-xs text-muted">{t('memberSince')} Jan 2025</div>
+                <div className="text-xs text-muted">
+                  {t('memberSince')}{' '}
+                  {user?.createdAt
+                    ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                    : 'Jan 2025'}
+                </div>
               </div>
             </div>
           </div>
